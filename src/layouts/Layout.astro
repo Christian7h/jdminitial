@@ -8,7 +8,7 @@ const { title } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="JDM Social Network" />
@@ -21,10 +21,10 @@ const { title } = Astro.props;
 		<header>
 			<nav>
 				<ul>
-					<li><a href="/">Home</a></li>
-					<li><a href="/profile">Profile</a></li>
+					<li><a href="/">Inicio</a></li>
+					<li><a href="/profile">Perfil</a></li>
 					<li><a href="/feed">Feed</a></li>
-					<li><a href="/events">Events</a></li>
+					<li><a href="/events">Eventos</a></li>
 					<li id="loginStatus"><a href="/login">Login</a></li>
 				</ul>
 			</nav>
@@ -33,7 +33,7 @@ const { title } = Astro.props;
 			<slot />
 		</main>
 		<footer>
-			<p>&copy; 2023 JDM Social Network. All rights reserved.</p>
+			<p>&copy; 2024 JDM. All rights reserved.</p>
 		</footer>
 	</body>
 </html>
@@ -79,6 +79,8 @@ const { title } = Astro.props;
 		font-family: system-ui, sans-serif;
 		background: rgb(var(--background));
 		color: rgb(var(--text));
+		scrollbar-color: #9b1852 #0f172a;
+		scrollbar-width: thin;
 	}
 	body {
 		margin: 0;

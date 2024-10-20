@@ -1,43 +1,43 @@
 ---
 //src/pages/index.astro
-import Layout from '../layouts/Layout.astro';
-import Post from '../components/Post.astro';
+import Layout from "../layouts/Layout.astro";
+import Post from "../components/Post.astro";
 ---
 
 <Layout title="JDM Social Network">
-	<h1>Welcome to <span class="text-gradient">JDM Social</span></h1>
-	<p>Connect with JDM enthusiasts from around the world!</p>
-	
-	<h2>Recent Posts</h2>
-	<Post 
-		username="driftking"
-		content="Just picked up a clean Nissan Silvia S15. Can't wait to hit the track!"
-		image="s15.jpg"
-	/>
-	<Post 
-		username="rx7_lover"
-		content="Who else thinks the RX-7 FD is the most beautiful JDM car ever made?"
-		image="rx7.avif"
-	/>
-	<Post 
-		username="touge_runner"
-		content="Planning a mountain run this weekend. Any takers?"
-	/>
+  <h1>¡Bienvenido a <span class="text-gradient">JDM Social</span>!</h1>
+  <p>¡Conéctate con entusiastas del JDM de todo el mundo!</p>
+
+  <h2>Publicaciones Recientes</h2>
+  <Post
+    username="driftking"
+    content="Acabo de conseguir un Nissan Silvia S15 impecable. ¡No puedo esperar para ir a la pista!"
+    image="s15.jpg"
+  />
+  <Post
+    username="rx7_lover"
+    content="¿Quién más piensa que el RX-7 FD es el auto JDM más hermoso jamás hecho?"
+    image="rx7.avif"
+  />
+  <Post
+    username="touge_runner"
+    content="Planeando una ruta por la montaña este fin de semana. ¿Alguien se anima?"
+  />
 </Layout>
 
 <style>
-	h1 {
-		font-size: 3rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
-		margin-bottom: 1em;
-	}
-	.text-gradient {
-		background-image: var(--accent-gradient);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color:darkcyan;
-		background-size: 400%;
-		background-position: 0%;
-	}
+  h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    margin-bottom: 1em;
+  }
+  .text-gradient {
+    background-image: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: darkcyan;
+    background-size: 400%;
+    background-position: 0%;
+  }
 </style>
