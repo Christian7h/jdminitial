@@ -1,0 +1,57 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const user = Astro.cookies.get('user')?.value;
+if (!user) {
+  return Astro.redirect('/login');
+}
+---
+
+<Layout title="Profile | JDM Social Network">
+	<h1>Your Profile</h1>
+	<div class="profile-info">
+		<img src="https://example.com/avatar.jpg" alt="Profile picture" class="avatar" />
+		<h2>{user}</h2>
+		<p>Lover of all things JDM. Current ride: Toyota Supra MK4</p>
+	</div>
+	<div class="car-gallery">
+		<h3>My Rides</h3>
+		<div class="car-images">
+			<img src="https://example.com/supra.jpg" alt="Toyota Supra MK4" />
+			<img src="https://example.com/skyline.jpg" alt="Nissan Skyline GT-R R34" />
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.profile-info {
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+	.avatar {
+		width: 150px;
+		height: 150px;
+		border-radius: 50%;
+		margin-bottom: 1rem;
+	}
+	.car-gallery {
+		background-color: rgba(var(--accent-light), 0.1);
+		border-radius: 8px;
+		padding: 1rem;
+	}
+	.car-images {
+		display: flex;
+		justify-content: space-around;
+		flex-wrap: wrap;
+	}
+	.car-images img {
+		max-width: 45%;
+		border-radius: 4px;
+		margin-bottom: 1rem;
+	}
+	@media (max-width: 768px) {
+		.car-images img {
+			max-width: 100%;
+		}
+	}
+</style>

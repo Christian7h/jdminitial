@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Events | JDM Social Network">
+	<h1>Upcoming JDM Events</h1>
+	<div class="events-list">
+		<div class="event">
+			<h2>Tokyo Auto Salon</h2>
+			<p>Date: January 12-14, 2024</p>
+			<p>Location: Makuhari Messe, Chiba, Japan</p>
+			<p>The world's largest custom car show featuring the latest in JDM trends and innovations.</p>
+		</div>
+		<div class="event">
+			<h2>Wekfest Japan</h2>
+			<p>Date: May 3-5, 2024</p>
+			<p>Location: Port Messe Nagoya, Nagoya, Japan</p>
+			<p>A gathering of the finest Japanese domestic market vehicles and aftermarket parts.</p>
+		</div>
+		<div class="event">
+			<h2>Drift Matsuri</h2>
+			<p>Date: September 20-22, 2024</p>
+			<p>Location: Ebisu Circuit, Fukushima, Japan</p>
+			<p>Three days of non-stop drifting action at the legendary Ebisu Circuit.</p>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.events-list {
+		display: grid;
+		gap: 2rem;
+	}
+	.event {
+		background-color: rgba(var(--accent-light), 0.1);
+		border-radius: 8px;
+		padding: 1rem;
+	}
+	.event h2 {
+		color: rgb(var(--accent-light));
+		margin-top: 0;
+	}
+	@media (min-width: 768px) {
+		.events-list {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>

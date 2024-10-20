@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Post from '../components/Post.astro';
+
+const user = Astro.cookies.get('user')?.value;
+if (!user) {
+  return Astro.redirect('/login');
+}
+---
+
+<Layout title="Feed | JDM Social Network">
+	<h1>Your Feed</h1>
+	<Post 
+		username="jdm_legend"
+		content="Just finished restoring my AE86. Initial D vibes all day!"
+		image="https://example.com/ae86.jpg"
+	/>
+	<Post 
+		username="boost_junkie"
+		content="Who's going to the JDM meet this weekend? I'll be bringing my freshly tuned Evo IX."
+	/>
+	<Post 
+		username="rotary_life"
+		content="RX-8 owners, what's your favorite mod so far?"
+	/>
+	<Post 
+		username="drift_missile"
+		content="New coilovers installed on the S13. Time to dial in that perfect drift setup!"
+		image="https://example.com/s13-coilovers.jpg"
+	/>
+</Layout>
+
+<style>
+	h1 {
+		margin-bottom: 2rem;
+	}
+</style>

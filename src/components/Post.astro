@@ -1,0 +1,33 @@
+---
+interface Props {
+	username: string;
+	content: string;
+	image?: string;
+}
+
+const { username, content, image } = Astro.props;
+---
+
+<div class="post">
+	<h3>{username}</h3>
+	<p>{content}</p>
+	{image && <img src={image} alt="Post image" />}
+</div>
+
+<style>
+	.post {
+		background-color: rgba(var(--accent-light), 0.1);
+		border-radius: 8px;
+		padding: 1rem;
+		margin-bottom: 1rem;
+	}
+	.post h3 {
+		color: rgb(var(--accent-light));
+		margin-top: 0;
+	}
+	.post img {
+		max-width: 100%;
+		border-radius: 4px;
+		margin-top: 1rem;
+	}
+</style>

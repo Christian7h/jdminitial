@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Login | JDM Social Network">
+	<h1>Login</h1>
+	<form id="loginForm">
+		<div>
+			<label for="username">Username:</label>
+			<input type="text" id="username" name="username" required>
+		</div>
+		<div>
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password" required>
+		</div>
+		<button type="submit">Login</button>
+	</form>
+	<p id="loginMessage"></p>
+</Layout>
+
+<script>
+	document.getElementById('loginForm').addEventListener('submit', function(e) {
+		e.preventDefault();
+		const username = document.getElementById('username').value;
+		const password = document.getElementById('password').value;
+		
+		// This is a mock login. In a real app, you'd validate against a backend.
+		if (username === 'demo' && password === 'password') {
+			localStorage.setItem('loggedIn', 'true');
+			localStorage.setItem('username', username);
+			document.getElementById('loginMessage').textContent = 'Login successful!';
+			setTimeout(() => {
+				window.location.href = '/';
+			}, 1000);
+		} else {
+			document.getElementById('loginMessage').textContent = 'Invalid credentials. Try demo/password.';
+		}
+	});
+</script>
+
+<style>
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		max-width: 300px;
+		margin: 0 auto;
+	}
+	input {
+		padding: 0.5rem;
+		border-radius: 4px;
+		border: 1px solid #ccc;
+	}
+	button {
+		padding: 0.5rem;
+		background-color: rgb(var(--accent-dark));
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+	button:hover {
+		background-color: rgb(var(--accent));
+	}
+</style>
