@@ -1,4 +1,5 @@
 ---
+//src/pages/login.astro
 import Layout from '../layouts/Layout.astro';
 ---
 
@@ -24,10 +25,10 @@ import Layout from '../layouts/Layout.astro';
 		const username = document.getElementById('username').value;
 		const password = document.getElementById('password').value;
 		
-		// This is a mock login. In a real app, you'd validate against a backend.
+		// Este es un login simulado. En una app real, validarías contra un backend.
 		if (username === 'demo' && password === 'password') {
-			localStorage.setItem('loggedIn', 'true');
-			localStorage.setItem('username', username);
+			// Crear la cookie 'user' para marcar el login
+			document.cookie = `user=${username}; path=/; max-age=${60 * 60 * 24}`;
 			document.getElementById('loginMessage').textContent = 'Login successful!';
 			setTimeout(() => {
 				window.location.href = '/';
@@ -37,6 +38,7 @@ import Layout from '../layouts/Layout.astro';
 		}
 	});
 </script>
+
 
 <style>
 	form {

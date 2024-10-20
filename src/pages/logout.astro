@@ -1,4 +1,5 @@
 ---
+//src/pages/logout.astro
 if (Astro.cookies.get('user')) {
   Astro.cookies.delete('user', { path: '/' });
 }
