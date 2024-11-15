@@ -3,8 +3,11 @@
 import Layout from '../layouts/Layout.astro';
 import Post from '../components/Post.astro';
 
-const user = Astro.cookies.get('user')?.value;
-if (!user) {
+import { getSession } from "auth-astro/server";
+
+const session = await getSession(Astro.request);
+
+if (!session) {
   return Astro.redirect('/login');
 }
 ---

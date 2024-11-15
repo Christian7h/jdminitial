@@ -1,9 +1,11 @@
 ---
 //src/pages/profile.astro
 import Layout from '../layouts/Layout.astro';
+import { getSession } from "auth-astro/server";
 
-const user = Astro.cookies.get('user')?.value;
-if (!user) {
+const session = await getSession(Astro.request);
+
+if (!session) {
   return Astro.redirect('/login');
 }
 ---
@@ -11,8 +13,8 @@ if (!user) {
 <Layout title="Profile | JDM Social Network">
 	<h1>Tu Perfil</h1>
 	<div class="profile-info">
-		<img src="profile.jpg" alt="Foto de perfil" class="avatar" />
-		<h2>{user}</h2>
+		<img src={session.user?.image} alt="Foto de perfil" class="avatar" />
+		<h2>{session.user?.name}</h2>
 		<p>Amante de todo lo relacionado con el JDM. Vehículo actual: Toyota Supra MK4</p>
 	</div>
 	<div class="car-gallery">

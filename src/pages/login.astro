@@ -1,6 +1,10 @@
 ---
 //src/pages/login.astro
 import Layout from '../layouts/Layout.astro';
+import { getSession } from "auth-astro/server";
+const session = await getSession(Astro.request);
+import { SignIn, SignOut } from "auth-astro/components";
+
 ---
 
 <Layout title="Login | JDM Social Network">
@@ -17,6 +21,20 @@ import Layout from '../layouts/Layout.astro';
 		<button type="submit">Login</button>
 	</form>
 	<p id="loginMessage"></p>
+	<h4>---or---</h4>
+	{
+		session ? (
+		  <>
+			<p>Hola {session.user?.email}</p>
+			<h5>Tu nombre es {session.user?.name}</h5>
+			<SignOut>Cerrar Sesión</SignOut>
+		  </>
+		) : (
+		  <>
+			<SignIn provider="github">Iniciar sesion con GitHub</SignIn>
+		  </>
+		)
+	  }
 </Layout>
 
 <script is:inline>
@@ -41,6 +59,7 @@ import Layout from '../layouts/Layout.astro';
 
 
 <style>
+
 	form {
 		display: flex;
 		flex-direction: column;

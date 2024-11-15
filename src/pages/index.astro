@@ -2,27 +2,69 @@
 //src/pages/index.astro
 import Layout from "../layouts/Layout.astro";
 import Post from "../components/Post.astro";
+import { getSession } from "auth-astro/server";
+const session = await getSession(Astro.request);
 ---
-
 <Layout title="JDM Social Network">
-  <h1>¡Bienvenido a <span class="text-gradient">JDM Social</span>!</h1>
+  {
+    session ? (
+      <>
+          <h1>¡Bienvenido Tu nombre es {session.user?.name}a <span class="text-gradient">JDM </span>!</h1>
+      </>
+    ) : (
+      <>
+      <h1>¡Bienvenido a <span class="text-gradient">JDM </span>!</h1>
+      </>
+    )
+  }
+  
   <p>¡Conéctate con entusiastas del JDM de todo el mundo!</p>
 
-  <h2>Publicaciones Recientes</h2>
-  <Post
-    username="driftking"
-    content="Acabo de conseguir un Nissan Silvia S15 impecable. ¡No puedo esperar para ir a la pista!"
-    image="s15.jpg"
-  />
-  <Post
-    username="rx7_lover"
-    content="¿Quién más piensa que el RX-7 FD es el auto JDM más hermoso jamás hecho?"
-    image="rx7.avif"
-  />
-  <Post
-    username="touge_runner"
-    content="Planeando una ruta por la montaña este fin de semana. ¿Alguien se anima?"
-  />
+  <div class="content-container">
+    <div class="posts-container">
+      <h2>Publicaciones Recientes</h2>
+      <Post
+        username="driftking"
+        content="Acabo de conseguir un Nissan Silvia S15 impecable. ¡No puedo esperar para ir a la pista!"
+        image="s15.jpg"
+      />
+      <Post
+        username="rx7_lover"
+        content="¿Quién más piensa que el RX-7 FD es el auto JDM más hermoso jamás hecho?"
+        image="rx7.avif"
+      />
+      <Post
+        username="touge_runner"
+        content="Planeando una ruta por la montaña este fin de semana. ¿Alguien se anima?"
+      />
+    </div>
+
+    <div class="events-container">
+      <h2>Próximos Eventos JDM</h2>
+      <div class="events-list">
+        <div class="event">
+          <h3>Tokyo Auto Salon</h3>
+          <p>Fecha: 12-14 de enero de 2024</p>
+          <p>Ubicación: Makuhari Messe, Chiba, Japón</p>
+          <p>La feria de autos personalizados más grande del mundo, presentando lo último en tendencias e innovaciones JDM.</p>
+        </div>
+        
+        <div class="event">
+          <h3>Wekfest Japón</h3>
+          <p>Fecha: 3-5 de mayo de 2024</p>
+          <p>Ubicación: Port Messe Nagoya, Nagoya, Japón</p>
+          <p>Una reunión de los mejores vehículos del mercado japonés y piezas de posventa.</p>
+        </div>
+        
+        <div class="event">
+          <h3>Drift Matsuri</h3>
+          <p>Fecha: 20-22 de septiembre de 2024</p>
+          <p>Ubicación: Ebisu Circuit, Fukushima, Japón</p>
+          <p>Tres días de acción de drifting sin parar en el legendario Ebisu Circuit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </Layout>
 
 <style>
@@ -33,11 +75,53 @@ import Post from "../components/Post.astro";
     text-align: center;
     margin-bottom: 1em;
   }
+
   .text-gradient {
     background-image: var(--accent-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: darkcyan;
     background-size: 400%;
     background-position: 0%;
+  }
+
+  .content-container {
+    display: flex;
+    justify-content: center; /* Centra el contenido principal */
+    max-width: 1200px; /* Limita el ancho total */
+    margin: 0 auto; /* Centra el contenedor principal */
+    gap: 2rem; /* Espacio entre publicaciones y eventos */
+  }
+
+  .posts-container {
+    flex: 1; /* Ocupar el espacio disponible */
+    display: flex;
+    flex-direction: column; /* Asegura que los posts estén en columna */
+    align-items: center; /* Centra los posts */
+  }
+
+  .events-container {
+    width: 300px; /* Ancho fijo para el contenedor de eventos */
+  }
+
+  .events-list {
+    display: grid;
+    gap: 1.5rem; /* Espacio entre eventos */
+  }
+
+  .event {
+    background-color: rgba(var(--accent-light), 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .event h3 {
+    color: rgb(var(--accent-light));
+    margin-top: 0;
+  }
+
+  @media (min-width: 768px) {
+    .events-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 </style>

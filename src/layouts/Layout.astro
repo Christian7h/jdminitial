@@ -1,7 +1,11 @@
 ---
-//src/layouts/Layout.astro
+import { getToken } from "@auth/core/jwt";
+import { SignIn, SignOut } from "auth-astro/components";
+import { AstroAuth, getSession } from "auth-astro/server";
+const session = await getSession(Astro.request);
+
 interface Props {
-	title: string;
+  title: string;
 }
 
 const { title } = Astro.props;
@@ -9,121 +13,122 @@ const { title } = Astro.props;
 
 <!doctype html>
 <html lang="es">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="JDM Social Network" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
-	</head>
-	<body>
-		<header>
-			<nav>
-				<ul>
-					<li><a href="/">Inicio</a></li>
-					<li><a href="/profile">Perfil</a></li>
-					<li><a href="/feed">Feed</a></li>
-					<li><a href="/events">Eventos</a></li>
-					<li id="loginStatus"><a href="/login">Login</a></li>
-				</ul>
-			</nav>
-		</header>
-		<main>
-			<slot />
-		</main>
-		<footer>
-			<p>&copy; 2024 JDM. All rights reserved.</p>
-		</footer>
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="JDM Social Network" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="space-x-2">
+          <li><a href="/">Inicio</a></li>
+          <ul class="">
+            <li><a href="/profile">Perfil</a></li>
+            <li><a href="/feed">Feed</a></li>
+            <li><a href="/events">Eventos</a></li>
+          </ul>
+        
+          <li id="loginStatus"><a href="/login">Login</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p>&copy; 2024 JDM. All rights reserved.</p>
+    </footer>
+  </body>
 </html>
 
 <script is:inline>
-	function updateLoginStatus() {
-	  const loginStatus = document.getElementById('loginStatus');
-	  
-	  // Leer las cookies
-	  const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-		const [key, value] = cookie.trim().split('=');
-		acc[key] = value;
-		return acc;
-	  }, {});
-  
-	  const username = cookies.user;
-  
-	  if (username) {
-		loginStatus.innerHTML = `<span>Welcome, ${username}!</span> <a href="#" id="logoutLink">Logout</a>`;
-		document.getElementById('logoutLink').addEventListener('click', (e) => {
-		  e.preventDefault();
-		  // Borrar la cookie de usuario al cerrar sesión
-		  document.cookie = 'user=; path=/; max-age=0';
-		  window.location.reload();
-		});
-	  } else {
-		loginStatus.innerHTML = '<a href="/login">Login</a>';
-	  }
-	}
-  
-	updateLoginStatus();
-  </script>
+  function updateLoginStatus() {
+    const loginStatus = document.getElementById("loginStatus");
+
+    const cookies = document.cookie.split(";").reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split("=");
+      acc[key] = value;
+      return acc;
+    }, {});
+
+    const username = cookies.user;
+    if (username) {
+      loginStatus.innerHTML = `<span>Bienvenido, ${username}!</span> <a href="#" id="logoutLink">Logout</a>`;
+      document.getElementById("logoutLink").addEventListener("click", (e) => {
+        e.preventDefault();
+        document.cookie = "user=; path=/; max-age=0";
+        window.location.reload();
+      });
+    } else {
+      loginStatus.innerHTML = '<a href="/login">Login</a>';
+    }
+  }
+
+  updateLoginStatus();
+</script>
 
 <style is:global>
-	:root {
-		--accent: 236, 72, 153;
-		--accent-light: 244, 114, 182;
-		--accent-dark: 190, 24, 93;
-		--background: 15, 23, 42;
-		--text: 226, 232, 240;
-	}
-	html {
-		font-family: system-ui, sans-serif;
-		background: rgb(var(--background));
-		color: rgb(var(--text));
-		scrollbar-color: #9b1852 #0f172a;
-		scrollbar-width: thin;
-	}
-	body {
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
-	header {
-		background-color: rgba(var(--accent-dark), 0.8);
-		padding: 1rem;
-	}
-	nav ul {
-		list-style-type: none;
-		padding: 0;
-		display: flex;
-		justify-content: space-around;
-		align-items: center;
-	}
-	nav a, nav span {
-		color: rgb(var(--text));
-		text-decoration: none;
-		font-weight: bold;
-	}
-	main {
-		flex: 1;
-		padding: 2rem;
-		max-width: 800px;
-		margin: 0 auto;
-	}
-	footer {
-		background-color: rgba(var(--accent-dark), 0.8);
-		color: rgb(var(--text));
-		text-align: center;
-		padding: 1rem;
-	}
-	@media (max-width: 768px) {
-		nav ul {
-			flex-direction: column;
-			align-items: center;
-		}
-		nav li {
-			margin-bottom: 0.5rem;
-		}
-	}
+  :root {
+    --accent: 236, 72, 153;
+    --accent-light: 244, 114, 182;
+    --accent-dark: 190, 24, 93;
+    --background: 15, 23, 42;
+    --text: 226, 232, 240;
+  }
+  html {
+    font-family: system-ui, sans-serif;
+    background: rgb(var(--background));
+    color: rgb(var(--text));
+    scrollbar-color: darkcyan #0f172a;
+    scrollbar-width: thin;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    background-color: darkcyan;
+    padding: 1rem;
+  }
+  nav ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  nav a,
+  nav span {
+    color: rgb(var(--text));
+    text-decoration: none;
+    font-weight: bold;
+  }
+  main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px; /* Ancho máximo aumentado */
+    margin: 0 auto;
+  }
+  footer {
+    background-color: darkcyan;
+    color: rgb(var(--text));
+    text-align: center;
+    padding: 1rem;
+  }
+  @media (max-width: 768px) {
+    nav ul {
+      flex-direction: column;
+      align-items: center;
+    }
+    nav li {
+      margin-bottom: 0.5rem;
+    }
+  }
 </style>
