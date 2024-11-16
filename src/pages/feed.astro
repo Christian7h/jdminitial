@@ -1,7 +1,7 @@
 ---
 //src/pages/feed.astro
 import Layout from '../layouts/Layout.astro';
-import Post from '../components/Post.astro';
+import PostPubli from '../components/PostPubli.astro';
 
 import { getSession } from "auth-astro/server";
 
@@ -14,22 +14,22 @@ if (!session) {
 
 <Layout title="Feed | JDM Social Network">
 	<h1>Tu Feed</h1>
-	<Post 
+	<PostPubli 
 		username="jdm_legend"
 		content="¡Acabo de terminar de restaurar mi AE86! ¡Vibes de Initial D todo el día!"
 		image="ae86.jpg"
 	/>
-	<Post 
+	<PostPubli 
 		username="boost_junkie"
 		content="¿Quién va a la reunión JDM este fin de semana? Llevaré mi Evo IX recién ajustado."
 		image="evo.jpg"
 	/>
-	<Post 
+	<PostPubli 
 		username="rotary_life"
 		content="Dueños de RX-8, ¿cuál ha sido su modificación favorita hasta ahora?"
 		image="rx8.jpg"
 	/>
-	<Post 
+	<PostPubli 
 		username="drift_missile"
 		content="¡Nuevos coilovers instalados en el S13! ¡Es hora de afinar esa configuración de drifting perfecta!"
 		image="s13.jpg"

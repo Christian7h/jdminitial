@@ -1,127 +1,172 @@
 ---
-//src/pages/index.astro
+// src/pages/index.astro
 import Layout from "../layouts/Layout.astro";
-import Post from "../components/Post.astro";
 import { getSession } from "auth-astro/server";
+import { db, User, Role, Post, PostImage, Comment, eq } from "astro:db";
+
 const session = await getSession(Astro.request);
+
+// Obtener publicaciones con la información del usuario
+const dbPosts = await db
+  .select()
+  .from(Post)
+  .innerJoin(PostImage, eq(Post.id, PostImage.postId))
+  .innerJoin(Comment, eq(Post.id, Comment.postId,))
+  .innerJoin(User, eq(Post.userId, User.id));
+
+// Obtener comentarios con la información del usuario
+const dbComments = await db
+  .select()
+  .from(Comment)
+  .innerJoin(User, eq(Comment.userId, User.id));
 ---
+
 <Layout title="JDM Social Network">
   {
     session ? (
-      <>
-          <h1>¡Bienvenido Tu nombre es {session.user?.name}a <span class="text-gradient">JDM </span>!</h1>
-      </>
+      <h1>¡Bienvenido, {session.user?.name}! 🚗💨</h1>
     ) : (
-      <>
-      <h1>¡Bienvenido a <span class="text-gradient">JDM </span>!</h1>
-      </>
+      <h1>¡Bienvenido a JDM Social Network! 🚗💨</h1>
     )
   }
-  
+
   <p>¡Conéctate con entusiastas del JDM de todo el mundo!</p>
 
-  <div class="content-container">
-    <div class="posts-container">
-      <h2>Publicaciones Recientes</h2>
-      <Post
-        username="driftking"
-        content="Acabo de conseguir un Nissan Silvia S15 impecable. ¡No puedo esperar para ir a la pista!"
-        image="s15.jpg"
-      />
-      <Post
-        username="rx7_lover"
-        content="¿Quién más piensa que el RX-7 FD es el auto JDM más hermoso jamás hecho?"
-        image="rx7.avif"
-      />
-      <Post
-        username="touge_runner"
-        content="Planeando una ruta por la montaña este fin de semana. ¿Alguien se anima?"
-      />
-    </div>
+  <div class="posts-container">
+    {dbPosts.map(({ Post, User, PostImage }) => (
+      <article id={`post-${Post.id}`} class="post">
+        <header>
+          <div class="user-info">
+            <strong>@{User.username}</strong>
+            <span class="timestamp">{new Date(Post.createdAt).toLocaleString()}</span>
+          </div>
+        </header>
 
-    <div class="events-container">
-      <h2>Próximos Eventos JDM</h2>
-      <div class="events-list">
-        <div class="event">
-          <h3>Tokyo Auto Salon</h3>
-          <p>Fecha: 12-14 de enero de 2024</p>
-          <p>Ubicación: Makuhari Messe, Chiba, Japón</p>
-          <p>La feria de autos personalizados más grande del mundo, presentando lo último en tendencias e innovaciones JDM.</p>
-        </div>
-        
-        <div class="event">
-          <h3>Wekfest Japón</h3>
-          <p>Fecha: 3-5 de mayo de 2024</p>
-          <p>Ubicación: Port Messe Nagoya, Nagoya, Japón</p>
-          <p>Una reunión de los mejores vehículos del mercado japonés y piezas de posventa.</p>
-        </div>
-        
-        <div class="event">
-          <h3>Drift Matsuri</h3>
-          <p>Fecha: 20-22 de septiembre de 2024</p>
-          <p>Ubicación: Ebisu Circuit, Fukushima, Japón</p>
-          <p>Tres días de acción de drifting sin parar en el legendario Ebisu Circuit.</p>
-        </div>
-      </div>
-    </div>
+        <p class="post-content">{Post.content}</p>
+        <img class="post-image" src={PostImage.imageUrl} width="565" height="330" alt="Post image" />
+<footer>
+          <div class="comments">
+            <h3>Comentarios:</h3>
+            {dbComments
+              .filter((comment) => comment.Comment.postId === Post.id)
+              .map(({ Comment, User }) => (
+                <div class="comment">
+                  <strong>@{User.username}:</strong>
+                  <p>{Comment.content}</p>
+                  <span class="comment-time">{new Date(Comment.createdAt).toLocaleString()}</span>
+                </div>
+              ))}
+          </div>
+        </footer>
+      </article>
+    ))}
   </div>
 </Layout>
 
 <style>
   h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    line-height: 1;
     text-align: center;
-    margin-bottom: 1em;
-  }
-
-  .text-gradient {
-    background-image: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: darkcyan;
-    background-size: 400%;
-    background-position: 0%;
-  }
-
-  .content-container {
-    display: flex;
-    justify-content: center; /* Centra el contenido principal */
-    max-width: 1200px; /* Limita el ancho total */
-    margin: 0 auto; /* Centra el contenedor principal */
-    gap: 2rem; /* Espacio entre publicaciones y eventos */
+    font-size: 2.5rem;
+    margin: 1rem 0;
+    color: #333;
   }
 
   .posts-container {
-    flex: 1; /* Ocupar el espacio disponible */
     display: flex;
-    flex-direction: column; /* Asegura que los posts estén en columna */
-    align-items: center; /* Centra los posts */
+    flex-direction: column;
+    gap: 2rem;
+    margin: 2rem auto;
+    max-width: 700px;
+    font-family: "Arial", sans-serif;
   }
 
-  .events-container {
-    width: 300px; /* Ancho fijo para el contenedor de eventos */
+  .post {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
   }
 
-  .events-list {
-    display: grid;
-    gap: 1.5rem; /* Espacio entre eventos */
+  .post:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  .event {
-    background-color: rgba(var(--accent-light), 0.1);
+  .post header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+  }
+
+  .user-info strong {
+    color: #555;
+    font-size: 1.2rem;
+  }
+
+  .timestamp {
+    color: #888;
+    font-size: 0.8rem;
+  }
+
+  .post-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .post-image {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 1rem;
+    object-fit: cover;
+  }
+
+  footer {
+    margin-top: 2rem;
+    border-top: 1px solid #ddd;
+    padding-top: 1rem;
+  }
+
+  .comments {
+    margin-top: 1rem;
+  }
+
+  .comments h3 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .comment {
+    background: #f9f9f9;
     border-radius: 8px;
     padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  .event h3 {
-    color: rgb(var(--accent-light));
-    margin-top: 0;
+  .comment strong {
+    color: #444;
+    font-size: 1rem;
   }
 
-  @media (min-width: 768px) {
-    .events-list {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  .comment p {
+    font-size: 0.95rem;
+    color: #333;
+  }
+
+  .comment-time {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #888;
   }
 </style>
