@@ -30,12 +30,12 @@ const dbComments = await db
     )
   }
 
-  <p>¡Conéctate con entusiastas del JDM de todo el mundo! desde Bocchih</p>
+  <p class="pstyle">¡Conéctate con entusiastas del JDM de todo el mundo! desde Bocchih</p>
 
   <div class="posts-container">
     {dbPosts.map(({ Post, User, PostImage }) => (
       <article id={`post-${Post.id}`} class="post">
-        <header>rt
+        <header>
           <div class="user-info">
             <strong>@{User.username}</strong>
             <span class="timestamp">{new Date(Post.createdAt).toLocaleString()}</span>
@@ -62,13 +62,17 @@ const dbComments = await db
     ))}
   </div>
 </Layout>
-
 <style>
+  .pstyle{
+    text-align: center;
+  }
   h1 {
     text-align: center;
     font-size: 2.5rem;
     margin: 1rem 0;
-    color: #333;
+    color: #ffff;
+    text:wrap;
+    
   }
 
   .posts-container {
@@ -81,7 +85,7 @@ const dbComments = await db
   }
 
   .post {
-    background: #fff;
+    background: #4cb7e1;
     border: 1px solid #ddd;
     border-radius: 12px;
     padding: 1.5rem;
@@ -111,7 +115,8 @@ const dbComments = await db
   }
 
   .timestamp {
-    color: #888;
+    margin-top: 1rem;
+    color: #ffff;
     font-size: 0.8rem;
   }
 
