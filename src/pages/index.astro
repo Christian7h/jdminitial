@@ -30,12 +30,12 @@ const dbComments = await db
     )
   }
 
-  <p>¡Conéctate con entusiastas del JDM de todo el mundo!</p>
+  <p>¡Conéctate con entusiastas del JDM de todo el mundo! desde Bocchi</p>
 
   <div class="posts-container">
     {dbPosts.map(({ Post, User, PostImage }) => (
       <article id={`post-${Post.id}`} class="post">
-        <header>
+        <header>rt
           <div class="user-info">
             <strong>@{User.username}</strong>
             <span class="timestamp">{new Date(Post.createdAt).toLocaleString()}</span>
