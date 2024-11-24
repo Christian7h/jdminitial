@@ -1,8 +1,20 @@
 ---
 // src/pages/index.astro
+import { server } from "../actions/index";
+
 import Layout from "../layouts/Layout.astro";
 import { getSession } from "auth-astro/server";
-import { db, User, Role, Post, PostImage, Comment, eq } from "astro:db";
+import {
+  db,
+  User,
+  Role,
+  Post,
+  PostImage,
+  Comment,
+  Comments,
+  Author,
+  eq,
+} from "astro:db";
 
 const session = await getSession(Astro.request);
 
@@ -11,7 +23,7 @@ const dbPosts = await db
   .select()
   .from(Post)
   .innerJoin(PostImage, eq(Post.id, PostImage.postId))
-  .innerJoin(Comment, eq(Post.id, Comment.postId,))
+  .innerJoin(Comment, eq(Post.id, Comment.postId))
   .innerJoin(User, eq(Post.userId, User.id));
 
 // Obtener comentarios con la información del usuario
@@ -19,6 +31,42 @@ const dbComments = await db
   .select()
   .from(Comment)
   .innerJoin(User, eq(Comment.userId, User.id));
+
+//
+
+// Render the new list of comments on each request
+const comments = await db
+  .select()
+  .from(Comments)
+  .innerJoin(Author, eq(Comments.authorId, Author.id));
+  if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const authorName = formData.get('author');  // El nombre del autor
+  const body = formData.get('body');          // El cuerpo del comentario
+  
+  // Verificar que el autor y el cuerpo sean cadenas
+  if (typeof authorName === 'string' && typeof body === 'string') {
+    // Comprobar si el autor ya existe en la base de datos
+    let authorId;
+    const existingAuthor = await db
+      .select()
+      .from(Author)
+      .where(eq(Author.name, authorName))  // Usar eq para comparar
+      .limit(1)
+      .execute();
+    
+    if (existingAuthor.length > 0) {
+      authorId = existingAuthor[0].id;
+    } else {
+      // Insertar el nuevo autor y obtener su id
+      const newAuthor = await db.insert(Author).values({ name: authorName }).returning().execute();
+      authorId = newAuthor[0].id;  // Obtener el ID del autor recién insertado
+    }
+
+    // Insertar el comentario con el authorId y body
+    await server.addComment({ authorId, body }); // Llamar a la acción correctamente
+  }
+}
 ---
 
 <Layout title="JDM Social Network">
@@ -29,22 +77,52 @@ const dbComments = await db
       <h1>¡Bienvenido a JDM Social Network! 🚗💨</h1>
     )
   }
+  <form method="POST" style="display: grid; gap: 1rem;">
+    <label for="author">Author Name</label>
+    <input id="author" name="author" type="text" required />
 
-  <p class="pstyle">¡Conéctate con entusiastas del JDM de todo el mundo! desde Bocchih</p>
+    <label for="body">Body</label>
+    <textarea id="body" name="body" required></textarea>
 
-  <div class="posts-container">
-    {dbPosts.map(({ Post, User, PostImage }) => (
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2>Comments</h2>
+  {
+    comments.map(({ Author, Comments }) => (
+      <article>
+        <p>Author: <strong>{Author.name}</strong></p>
+        <p>{Comments.body}</p>
+      </article>
+    ))
+  }
+</Layout>
+<p class="pstyle">
+  ¡Conéctate con entusiastas del JDM de todo el mundo! desde Bocchih
+</p>
+
+<div class="posts-container">
+  {
+    dbPosts.map(({ Post, User, PostImage }) => (
       <article id={`post-${Post.id}`} class="post">
         <header>
           <div class="user-info">
             <strong>@{User.username}</strong>
-            <span class="timestamp">{new Date(Post.createdAt).toLocaleString()}</span>
+            <span class="timestamp">
+              {new Date(Post.createdAt).toLocaleString()}
+            </span>
           </div>
         </header>
 
         <p class="post-content">{Post.content}</p>
-        <img class="post-image" src={PostImage.imageUrl} width="565" height="330" alt="Post image" />
-<footer>
+        <img
+          class="post-image"
+          src={PostImage.imageUrl}
+          width="565"
+          height="330"
+          alt="Post image"
+        />
+        <footer>
           <div class="comments">
             <h3>Comentarios:</h3>
             {dbComments
@@ -53,17 +131,20 @@ const dbComments = await db
                 <div class="comment">
                   <strong>@{User.username}:</strong>
                   <p>{Comment.content}</p>
-                  <span class="comment-time">{new Date(Comment.createdAt).toLocaleString()}</span>
+                  <span class="comment-time">
+                    {new Date(Comment.createdAt).toLocaleString()}
+                  </span>
                 </div>
               ))}
           </div>
         </footer>
       </article>
-    ))}
-  </div>
-</Layout>
+    ))
+  }
+</div>
+
 <style>
-  .pstyle{
+  .pstyle {
     text-align: center;
   }
   h1 {
@@ -71,8 +152,7 @@ const dbComments = await db
     font-size: 2.5rem;
     margin: 1rem 0;
     color: #ffff;
-    text:wrap;
-    
+    text: wrap;
   }
 
   .posts-container {

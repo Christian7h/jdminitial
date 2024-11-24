@@ -10,8 +10,24 @@ const session = await getSession(Astro.request);
 if (!session) {
   return Astro.redirect('/login');
 }
+
+import { db, eq, Comments, Author } from "astro:db";
+
+const comments = await db
+  .select()
+  .from(Comments)
+  .innerJoin(Author, eq(Comments.authorId, Author.id));
 ---
 
+<h2>Comments</h2>
+{
+  comments.map(({ Author, Comments }) => (
+	<article>
+	  {" "}
+	  <p>Author: {Author.name}</p> <p>{Comments.body}</p>{" "}
+	</article>
+  ))
+}
 <Layout title="Feed | JDM Social Network">
 	<h1>Tu Feed</h1>
 	<PostPubli 
