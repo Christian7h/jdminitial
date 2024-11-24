@@ -39,9 +39,11 @@
     // Insertar comentarios
     await db.insert(Comment).values([
       { id: 'comment1', postId: 'post1', userId: 'user2', content: '¡Se ve increíble!' },
-      { id: 'comment2', postId: 'post2', userId: 'user1', content: 'Nos vemos allá.' },
-      { id: 'comment3', postId: 'post3', userId: 'user4', content: '¡Esa es la actitud! No te dejes alcanzar.' }, // Nuevo comentario
-      { id: 'comment4', postId: 'post4', userId: 'user5', content: '¡Suena brutal, amigo! Ya quiero ver esos tiempos.' }, // Nuevo comentario
-      { id: 'comment5', postId: 'post5', userId: 'user2', content: '¡Vas a romperla con ese Civic! ¿Qué cambios le hiciste al motor?' }, // Nuevo comentario
+      { id: 'comment2', postId: 'post1', userId: 'user5', content: '!Te espero ena la pista jefe!' },
+
+      { id: 'comment3', postId: 'post2', userId: 'user1', content: 'Nos vemos allá.' },
+      { id: 'comment4', postId: 'post3', userId: 'user4', content: '¡Esa es la actitud! No te dejes alcanzar.' }, // Nuevo comentario
+      { id: 'comment5', postId: 'post4', userId: 'user5', content: '¡Suena brutal, amigo! Ya quiero ver esos tiempos.' }, // Nuevo comentario
+      { id: 'comment6', postId: 'post5', userId: 'user2', content: '¡Vas a romperla con ese Civic! ¿Qué cambios le hiciste al motor?' }, // Nuevo comentario
     ]);
   }
