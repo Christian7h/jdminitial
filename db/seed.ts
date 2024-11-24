@@ -166,11 +166,11 @@ export default async function () {
     }, // Nuevo comentario
   ]);
   await db.insert(Author).values([
-    { id: 1, name: "Kasim" },
-    { id: 2, name: "Mina" },
+    { id: 1, name: "Cristian" },
+    { id: 2, name: "Esteban" },
   ]);
   await db.insert(Comments).values([
-    { authorId: 1, body: "Hope you like Astro DB!" },
-    { authorId: 2, body: "Enjoy!" },
+    { authorId: 1, body: "Push astro db turso --remote" },
+    { authorId: 2, body: "Vamooooh!!" },
   ]);
 }

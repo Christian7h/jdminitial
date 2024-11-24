@@ -39,13 +39,16 @@ const comments = await db
   .select()
   .from(Comments)
   .innerJoin(Author, eq(Comments.authorId, Author.id));
+
   if (Astro.request.method === 'POST') {
   const formData = await Astro.request.formData();
-  const authorName = formData.get('author');  // El nombre del autor
-  const body = formData.get('body');          // El cuerpo del comentario
+  const body = formData.get('body');  // El cuerpo del comentario
   
-  // Verificar que el autor y el cuerpo sean cadenas
-  if (typeof authorName === 'string' && typeof body === 'string') {
+  // Verificar que el cuerpo sea una cadena
+  if (typeof body === 'string' && session) {
+    // Usar el nombre de usuario de la sesión para el autor
+    const authorName = session.user?.name || session.user?.username;
+    
     // Comprobar si el autor ya existe en la base de datos
     let authorId;
     const existingAuthor = await db
@@ -72,21 +75,17 @@ const comments = await db
 <Layout title="JDM Social Network">
   {
     session ? (
-      <h1>¡Bienvenido, {session.user?.name}! 🚗💨</h1>
+      <h1>¡Bienvenido, {session.user?.name || session.user?.username}! 🚗💨</h1>
+      <form method="POST" style="display: grid; gap: 1rem;">
+        <label for="body">Body</label>
+        <textarea id="body" name="body" required></textarea>
+
+        <button type="submit">Submit</button>
+      </form>
     ) : (
       <h1>¡Bienvenido a JDM Social Network! 🚗💨</h1>
     )
   }
-  <form method="POST" style="display: grid; gap: 1rem;">
-    <label for="author">Author Name</label>
-    <input id="author" name="author" type="text" required />
-
-    <label for="body">Body</label>
-    <textarea id="body" name="body" required></textarea>
-
-    <button type="submit">Submit</button>
-  </form>
-
   <h2>Comments</h2>
   {
     comments.map(({ Author, Comments }) => (
