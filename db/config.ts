@@ -5,17 +5,16 @@ const User = defineTable({
   columns: {
     id: column.text({ primaryKey: true, unique: true }),
     username: column.text({ unique: true }),
-    email: column.text({ unique: true }),
-    password: column.text(),
-    createdAt: column.date({ default: new Date() }),
-    role: column.text({ references: () => Role.columns.id }),
+    password: column.text({ optional: true}),
+    github_id: column.text({ optional: true, unique: true }),
   },
 });
 
-const Role = defineTable({
+const Session = defineTable({
   columns: {
-    id: column.text({ primaryKey: true }),
-    name: column.text(),
+    id: column.text({ optional: false,unique: true }),
+    userId: column.text({ references: () => User.columns.id, optional: false }),
+    expiresAt: column.number({ optional: false }),
   },
 });
 
@@ -47,25 +46,12 @@ const Comment = defineTable({
   },
 });
 
-const Author = defineTable({
-  columns: { id: column.number({ primaryKey: true }), name: column.text() },
-});
-
-const Comments = defineTable({
-  columns: {
-    authorId: column.number({ references: () => Author.columns.id }),
-    body: column.text(),
-  },
-});
-
 export default defineDb({
   tables: {
     User,
-    Role,
+    Session,
     Post,
     PostImage,
     Comment,
-    Comments,
-    Author,
   },
 });

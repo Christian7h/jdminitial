@@ -1,9 +1,6 @@
 ---
 //src/pages/login.astro
 import Layout from '../layouts/Layout.astro';
-import { getSession } from "auth-astro/server";
-const session = await getSession(Astro.request);
-import { SignIn, SignOut } from "auth-astro/components";
 
 ---
 
@@ -19,44 +16,8 @@ import { SignIn, SignOut } from "auth-astro/components";
 			<input type="password" id="password" name="password" required>
 		</div>
 		<button type="submit">Login</button>
-	</form>
-	<p id="loginMessage"></p>
-	<h4>---or---</h4>
-	{
-		session ? (
-		  <>
-			<p>Hola {session.user?.email}</p>
-			<h5>Tu nombre es {session.user?.name}</h5>
-			<SignOut>Cerrar Sesión</SignOut>
-		  </>
-		) : (
-		  <>
-			<SignIn provider="github">Iniciar sesion con GitHub</SignIn>
-		  </>
-		)
-	  }
+	</form>	
 </Layout>
-
-<script is:inline>
-	document.getElementById('loginForm').addEventListener('submit', function(e) {
-		e.preventDefault();
-		const username = document.getElementById('username').value;
-		const password = document.getElementById('password').value;
-		
-		// Este es un login simulado. En una app real, validarías contra un backend.
-		if (username === 'demo' && password === 'password') {
-			// Crear la cookie 'user' para marcar el login
-			document.cookie = `user=${username}; path=/; max-age=${60 * 60 * 24}`;
-			document.getElementById('loginMessage').textContent = 'Login successful!';
-			setTimeout(() => {
-				window.location.href = '/';
-			}, 1000);
-		} else {
-			document.getElementById('loginMessage').textContent = 'Invalid credentials. Try demo/password.';
-		}
-	});
-</script>
-
 
 <style>
 

@@ -1,8 +1,5 @@
 ---
-import { getToken } from "@auth/core/jwt";
-import { SignIn, SignOut } from "auth-astro/components";
-import { AstroAuth, getSession } from "auth-astro/server";
-const session = await getSession(Astro.request);
+const user = Astro.locals.user;
 
 interface Props {
   title: string;
@@ -18,7 +15,7 @@ const { title } = Astro.props;
     <meta name="description" content="JDM Social Network" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    
+
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
@@ -26,16 +23,28 @@ const { title } = Astro.props;
     <header>
       <nav>
         <ul>
-        
-            <li><a href="/">Inicio</a></li>
-           
-            <div class="space-x-2">
-              <li><a href="/profile">Perfil</a></li>
-              <li><a href="/feed">Feed</a></li>
-              <li><a href="/events">Eventos</a></li>
-            </div>
-            
-          <li id="loginStatus"><a href="/login">Login</a></li>
+          <li><a href="/">Inicio</a></li>
+
+          <div class="space-x-2">
+            <li><a href="/profile">Perfil</a></li>
+            <li><a href="/feed">Feed</a></li>
+            <li><a href="/events">Eventos</a></li>
+          </div>
+
+          <div class="space-x-2">
+            {!user ? (
+              <>
+                <li><a href="/signin">Sign In</a></li>
+                <li><a href="/signup">Sign Up</a></li>
+              </>
+            ) : (
+              <div class="flex flex-col gap-2">
+                <form method="POST" action="/api/signout">
+                  <button class="underline">Sign out</button>
+                </form>
+              </div>
+            )}
+          </div>
         </ul>
       </nav>
     </header>
@@ -48,32 +57,6 @@ const { title } = Astro.props;
   </body>
 </html>
 
-<script is:inline>
-  function updateLoginStatus() {
-    const loginStatus = document.getElementById("loginStatus");
-
-    const cookies = document.cookie.split(";").reduce((acc, cookie) => {
-      const [key, value] = cookie.trim().split("=");
-      acc[key] = value;
-      return acc;
-    }, {});
-
-    const username = cookies.user;
-    if (username) {
-      loginStatus.innerHTML = `<span>Bienvenido, ${username}!</span> <a href="#" id="logoutLink">Logout</a>`;
-      document.getElementById("logoutLink").addEventListener("click", (e) => {
-        e.preventDefault();
-        document.cookie = "user=; path=/; max-age=0";
-        window.location.reload();
-      });
-    } else {
-      loginStatus.innerHTML = '<a href="/login">Login</a>';
-    }
-  }
-
-  updateLoginStatus();
-</script>
-
 <style is:global>
   * {
     list-style-type: none;
@@ -82,7 +65,7 @@ const { title } = Astro.props;
     --accent: 236, 72, 153;
     --accent-light: 244, 114, 182;
     --accent-dark: 190, 24, 93;
-    --background: 26,182,203;
+    --background: 26, 182, 203;
     --text: 226, 232, 240;
   }
   html {
@@ -109,15 +92,13 @@ const { title } = Astro.props;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    
   }
   nav a,
   nav ul div {
     display: flex;
     list-style-type: none;
     justify-content: space-between;
-    padding:2vh;
-
+    padding: 2vh;
   }
 
   nav span {

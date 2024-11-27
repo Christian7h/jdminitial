@@ -1,60 +1,67 @@
 ---
 //src/pages/profile.astro
-import Layout from '../layouts/Layout.astro';
-import { getSession } from "auth-astro/server";
+import Layout from "../layouts/Layout.astro";
 
-const session = await getSession(Astro.request);
+const user = Astro.locals.user;
+const githubIdNumber = user?.githubId
+  ? parseInt(user.githubId.toString())
+  : null;
 
-if (!session) {
-  return Astro.redirect('/login');
-}
+console.log(user);
 ---
 
 <Layout title="Profile | JDM Social Network">
-	<h1>Tu Perfil</h1>
-	<div class="profile-info">
-		<img src={session.user?.image} alt="Foto de perfil" class="avatar" />
-		<h2>{session.user?.name}</h2>
-		<p>Amante de todo lo relacionado con el JDM. Vehículo actual: Toyota Supra MK4</p>
-	</div>
-	<div class="car-gallery">
-		<h3>Mis Autos</h3>
-		<div class="car-images">
-			<img src="mk4.jpg" alt="Toyota Supra MK4" />
-			<img src="r34.jpg" alt="Nissan Skyline GT-R R34" />
-		</div>
-	</div>
+  <h1>Tu Perfil</h1>
+  <div class="profile-info">
+    <img
+      src={`https://avatars.githubusercontent.com/u/${githubIdNumber}`}
+      alt="Foto de perfil"
+      class="avatar"
+    />
+    <h2>{user?.username}</h2>
+    <p>
+      Amante de todo lo relacionado con el JDM. Vehículo actual: Toyota Supra
+      MK4
+    </p>
+  </div>
+  <div class="car-gallery">
+    <h3>Mis Autos</h3>
+    <div class="car-images">
+      <img src="mk4.jpg" alt="Toyota Supra MK4" />
+      <img src="r34.jpg" alt="Nissan Skyline GT-R R34" />
+    </div>
+  </div>
 </Layout>
 
 <style>
-	.profile-info {
-		text-align: center;
-		margin-bottom: 2rem;
-	}
-	.avatar {
-		width: 150px;
-		height: 150px;
-		border-radius: 50%;
-		margin-bottom: 1rem;
-	}
-	.car-gallery {
-		background-color: rgba(var(--accent-light), 0.1);
-		border-radius: 8px;
-		padding: 1rem;
-	}
-	.car-images {
-		display: flex;
-		justify-content: space-around;
-		flex-wrap: wrap;
-	}
-	.car-images img {
-		max-width: 45%;
-		border-radius: 4px;
-		margin-bottom: 1rem;
-	}
-	@media (max-width: 768px) {
-		.car-images img {
-			max-width: 100%;
-		}
-	}
+  .profile-info {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+  }
+  .car-gallery {
+    background-color: rgba(var(--accent-light), 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .car-images {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+  .car-images img {
+    max-width: 45%;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 768px) {
+    .car-images img {
+      max-width: 100%;
+    }
+  }
 </style>
