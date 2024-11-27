@@ -3,13 +3,9 @@
 import Layout from '../layouts/Layout.astro';
 import PostPubli from '../components/PostPubli.astro';
 
-import { getSession } from "auth-astro/server";
 
-const session = await getSession(Astro.request);
 
-if (!session) {
-  return Astro.redirect('/login');
-}
+
 
 // import { db, eq, Comments, Author } from "astro:db";
 
