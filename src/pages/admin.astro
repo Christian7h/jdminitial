@@ -1,0 +1,128 @@
+---
+import { db, Post, PostImage, Comment, User, eq } from "astro:db";
+import Layout from "../layouts/Layout.astro";
+
+// Función para eliminar un post
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const postId = formData.get('postId');
+  const userId = formData.get('userId');
+  const commentId = formData.get('commentId');
+  
+  if (typeof postId === 'string') {
+    try {
+      // Eliminar las imágenes relacionadas con el post
+      await db.delete(PostImage).where(eq(PostImage.postId, postId));
+      // Eliminar los comentarios relacionados con el post
+      await db.delete(Comment).where(eq(Comment.postId, postId));
+      // Eliminar el post
+      await db.delete(Post).where(eq(Post.id, postId));
+    } catch (error) {
+      console.error("Error al eliminar el post:", error);
+    }
+  }
+
+  // Función para eliminar un usuario
+  if (typeof userId === 'string') {
+    try {
+      await db.delete(User).where(eq(User.id, userId));
+    } catch (error) {
+      console.error("Error al eliminar el usuario:", error);
+    }
+  }
+
+  // Función para eliminar un comentario
+  if (typeof commentId === 'string') {
+    try {
+      await db.delete(Comment).where(eq(Comment.id, commentId));
+    } catch (error) {
+      console.error("Error al eliminar el comentario:", error);
+    }
+  }
+}
+
+// Obtener los datos actuales desde la base de datos
+const posts = await db.select().from(Post);
+const users = await db.select().from(User);
+const comments = await db.select().from(Comment);
+---
+
+  <section>
+    <h2>Gestión de Posts</h2>
+    <ul>
+      {posts.map((post) => (
+        <li>
+          <span>{post.content}</span>
+          <!-- Formulario para eliminar el post -->
+          <form method="POST">
+            <input type="hidden" name="postId" value={post.id} />
+            <button type="submit" class="delete-button">Eliminar</button>
+          </form>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Gestión de Usuarios</h2>
+    <ul>
+      {users.map((user) => (
+        <li>
+          <span>{user.username}</span>
+          <!-- Formulario para eliminar el usuario -->
+          <form method="POST">
+            <input type="hidden" name="userId" value={user.id} />
+            <button type="submit" class="delete-button">Eliminar</button>
+          </form>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Gestión de Comentarios</h2>
+    <ul>
+      {comments.map((comment) => (
+        <li>
+          <span>{comment.content}</span>
+          <!-- Formulario para eliminar el comentario -->
+          <form method="POST">
+            <input type="hidden" name="commentId" value={comment.id} />
+            <button type="submit" class="delete-button">Eliminar</button>
+          </form>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+<style>
+  body {
+    background-color: #0f1923;
+    color: #ece8e1;
+    font-family: 'Valorant', sans-serif;
+  }
+  header, footer {
+    background-color: #ff4655;
+    color: #ece8e1;
+    padding: 1rem;
+    text-align: center;
+  }
+  nav a {
+    color: #ece8e1;
+    text-decoration: none;
+    margin: 0 1rem;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  .delete-button {
+    background-color: #ff4655;
+    color: #ece8e1;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+  .delete-button:hover {
+    background-color: #d43f4a;
+  }
+</style>

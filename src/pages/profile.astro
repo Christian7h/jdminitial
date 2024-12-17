@@ -3,10 +3,13 @@
 import Layout from "../layouts/Layout.astro";
 
 const user = Astro.locals.user;
+if (!user) {
+  // Si no está autenticado, redirigir a la página de login
+  return Astro.redirect("/signin");
+}
 const githubIdNumber = user?.githubId
   ? parseInt(user.githubId.toString())
   : null;
-
 console.log(user);
 ---
 

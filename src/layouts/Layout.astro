@@ -8,123 +8,59 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="JDM Social Network" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   </head>
-  <body>
-    <header>
-      <nav>
-        <ul>
-          <li><a href="/">Inicio</a></li>
+  <body class="bg-gray-900 text-white">
+    <!-- Header Section -->
+    <header class="bg-gray-800 shadow-md py-4">
+      <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+        <!-- Logo / Brand -->
+        <a href="/" class="text-2xl font-bold text-red-600 hover:text-red-400 transition duration-200">JDM Social</a>
 
-          <div class="space-x-2">
-            <li><a href="/profile">Perfil</a></li>
-            <li><a href="/feed">Feed</a></li>
-            <li><a href="/events">Eventos</a></li>
-          </div>
+        <!-- Navigation Menu -->
+        <nav>
+          <ul class="flex space-x-4">
+            <li><a href="/" class="hover:text-red-600 transition duration-200">Inicio</a></li>
+            <li><a href="/profile" class="hover:text-red-600 transition duration-200">Perfil</a></li>
+            <li><a href="/feed" class="hover:text-red-600 transition duration-200">Feed</a></li>
+            <li><a href="/events" class="hover:text-red-600 transition duration-200">Eventos</a></li>
 
-          <div class="space-x-2">
-            {!user ? (
-              <>
-                <li><a href="/signin">Sign In</a></li>
-                <li><a href="/signup">Sign Up</a></li>
-              </>
-            ) : (
-              <div class="flex flex-col gap-2">
-                <form method="POST" action="/api/signout">
-                  <button class="underline">Sign out</button>
-                </form>
-              </div>
-            )}
-          </div>
-        </ul>
-      </nav>
+            <div class="flex items-center space-x-4">
+              {!user ? (
+                <>
+                  <li><a href="/signin" class="text-red-600 hover:text-red-400 transition duration-200">Sign In</a></li>
+                  <li><a href="/signup" class="text-red-600 hover:text-red-400 transition duration-200">Sign Up</a></li>
+                </>
+              ) : (
+                <div class="flex items-center space-x-4">
+                  <form method="POST" action="/api/signout">
+                    <button type="submit" class="text-red-600 hover:text-red-400 transition duration-200">Sign out</button>
+                  </form>
+                </div>
+              )}
+            </div>
+          </ul>
+        </nav>
+      </div>
     </header>
-    <main>
+
+    <!-- Main Content Area -->
+    <main class="py-8 px-4 max-w-7xl mx-auto">
       <slot />
     </main>
-    <footer>
-      <p>&copy; 2024 JDM. All rights reserved.</p>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-center py-6 mt-12">
+      <p>&copy; 2024 JDM. Todos los derechos reservados.</p>
     </footer>
   </body>
 </html>
-
-<style is:global>
-  * {
-    list-style-type: none;
-  }
-  :root {
-    --accent: 236, 72, 153;
-    --accent-light: 244, 114, 182;
-    --accent-dark: 190, 24, 93;
-    --background: 26, 182, 203;
-    --text: 226, 232, 240;
-  }
-  html {
-    font-family: system-ui, sans-serif;
-    background: rgb(var(--background));
-    color: rgb(var(--text));
-    scrollbar-color: darkcyan #0f172a;
-    scrollbar-width: thin;
-  }
-  body {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  header {
-    background-color: #0000;
-    padding: 1rem;
-  }
-  nav ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-  }
-  nav a,
-  nav ul div {
-    display: flex;
-    list-style-type: none;
-    justify-content: space-between;
-    padding: 2vh;
-  }
-
-  nav span {
-    color: rgb(var(--text));
-    text-decoration: none;
-    font-weight: bold;
-  }
-  main {
-    flex: 1;
-    padding: 2rem;
-    max-width: 1200px; /* Ancho máximo aumentado */
-    margin: 0 auto;
-  }
-  footer {
-    background-color: #0000;
-    color: rgb(var(--text));
-    text-align: center;
-    padding: 1rem;
-  }
-  @media (max-width: 768px) {
-    nav ul {
-      flex-direction: column;
-      align-items: center;
-    }
-    nav li {
-      margin-bottom: 0.5rem;
-    }
-  }
-</style>

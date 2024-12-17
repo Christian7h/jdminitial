@@ -1,4 +1,5 @@
-import { lucia } from "./auth";
+//src/middleware.ts
+import { lucia } from "./auth"; 
 import { verifyRequestOrigin } from "lucia";
 import { defineMiddleware } from "astro:middleware";
 

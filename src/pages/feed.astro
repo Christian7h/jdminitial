@@ -1,58 +1,41 @@
 ---
 //src/pages/feed.astro
-import Layout from '../layouts/Layout.astro';
-import PostPubli from '../components/PostPubli.astro';
+import Layout from "../layouts/Layout.astro";
+import PostPubli from "../components/PostPubli.astro";
+const user = Astro.locals.user;
 
-
-
-
-
-// import { db, eq, Comments, Author } from "astro:db";
-
-// Render the new list of comments on each request
-// const comments = await db
-//   .select()
-//   .from(Comments)
-//   .innerJoin(Author, eq(Comments.authorId, Author.id));
+if (!user) {
+  // Si no está autenticado, redirigir a la página de login
+  return Astro.redirect("/signin");
+}
 ---
-	
-<!-- <h2>Comments</h2>
-  <h2>Comments</h2>
-  {
-    comments.map(({ Author, Comments }) => (
-      <article>
-        <p>Author: <strong>{Author.name}</strong></p>
-        <p>{Comments.body}</p>
-      </article>
-    ))
-  }-->
+
 <Layout title="Feed | JDM Social Network">
-	<h1>Tu Feed</h1>
-	<PostPubli 
-		username="jdm_legend"
-		content="¡Acabo de terminar de restaurar mi AE86! ¡Vibes de Initial D todo el día!"
-		image="ae86.jpg"
-	/>
-	<PostPubli 
-		username="boost_junkie"
-		content="¿Quién va a la reunión JDM este fin de semana? Llevaré mi Evo IX recién ajustado."
-		image="evo.jpg"
-	/>
-	<PostPubli 
-		username="rotary_life"
-		content="Dueños de RX-8, ¿cuál ha sido su modificación favorita hasta ahora?"
-		image="rx8.jpg"
-	/>
-	<PostPubli 
-		username="drift_missile"
-		content="¡Nuevos coilovers instalados en el S13! ¡Es hora de afinar esa configuración de drifting perfecta!"
-		image="s13.jpg"
-	/>
-	
+  <h1>Tu Feed</h1>
+  <PostPubli
+    username="jdm_legend"
+    content="¡Acabo de terminar de restaurar mi AE86! ¡Vibes de Initial D todo el día!"
+    image="ae86.jpg"
+  />
+  <PostPubli
+    username="boost_junkie"
+    content="¿Quién va a la reunión JDM este fin de semana? Llevaré mi Evo IX recién ajustado."
+    image="evo.jpg"
+  />
+  <PostPubli
+    username="rotary_life"
+    content="Dueños de RX-8, ¿cuál ha sido su modificación favorita hasta ahora?"
+    image="rx8.jpg"
+  />
+  <PostPubli
+    username="drift_missile"
+    content="¡Nuevos coilovers instalados en el S13! ¡Es hora de afinar esa configuración de drifting perfecta!"
+    image="s13.jpg"
+  />
 </Layout>
 
 <style>
-	h1 {
-		margin-bottom: 2rem;
-	}
+  h1 {
+    margin-bottom: 2rem;
+  }
 </style>

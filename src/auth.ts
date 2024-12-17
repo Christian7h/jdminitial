@@ -1,3 +1,4 @@
+//src/auth.ts
 import { Lucia } from "lucia";
 import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
 import { db, Session, User } from "astro:db";

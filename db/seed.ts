@@ -25,6 +25,7 @@ export default async function () {
       { id: "post3", userId: "user3", content: "¡Listo para la próxima carrera nocturna con mi Skyline R34!", imageUrl: "https://images.collectingcars.com/065087/DSC06564.jpg?w=1263" },
       { id: "post4", userId: "user4", content: "Mi Supra ha recibido un nuevo kit de turbo", imageUrl: "https://i.pinimg.com/736x/11/fd/05/11fd057b474fffbf084c74099abfc78e.jpg" },
       { id: "post5", userId: "user5", content: "Realizando modificaciones en el motor de un Civic EK9", imageUrl: "https://allthingzjdm.com/cdn/shop/files/448430750_1005220864628867_2965578774528955142_n.jpg?v=1718589371" },
+      { id: "post6", userId: "user2", content: "Realizando modificaciones enawddv", imageUrl: "" },
     ]);
 
     // Insertar imágenes para posts

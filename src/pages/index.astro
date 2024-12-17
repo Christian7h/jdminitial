@@ -1,242 +1,142 @@
 ---
-// Importamos el servidor y la sesión.
+import { nanoid } from "nanoid";
 import Layout from "../layouts/Layout.astro";
-import { db, User, Post, PostImage, Comment, eq } from "astro:db";
-const user =Astro.locals.user;
-console.log(user)
+import { db, User, Post, PostImage, Comment, eq, sql, desc } from "astro:db";
+import PostComponent from "../components/PostComponent.jsx"; // Importa el componente
+
 const session = Astro.locals.session;
-console.log(session)
-// Consultar los posts y sus relaciones
-const dbPosts = await db
+const user = Astro.locals.user;
+
+console.log(user);
+
+// Consultar los posts y sus relaciones (también incluye los comentarios)
+const soloPosts = await db
   .select()
   .from(Post)
-  .innerJoin(PostImage, eq(Post.id, PostImage.postId))
-  .innerJoin(Comment, eq(Post.id, Comment.postId))
-  .innerJoin(User, eq(Post.userId, User.id));
+  .innerJoin(User, eq(Post.userId, User.id)) // Para obtener la información del usuario que creó el post
+  .orderBy(desc(Post.createdAt));
 
-// Consultar los comentarios
+// Solo permitir la creación de un post si el usuario está logueado
+if (Astro.request.method === "POST" && user) {
+  const formData = await Astro.request.formData();
+  const content = formData.get("content");
+  const imageUrl = formData.get("imageUrl") || ""; // Asegurarse de que imageUrl sea una cadena vacía si es null
+
+  if (typeof content === "string" && content.trim()) {
+    // Crear un nuevo post
+    const postId = nanoid(); // Usamos nanoid para generar un ID único
+    await db.insert(Post).values([{
+      id: postId,
+      userId: user.id, // ID del usuario que está publicando
+      content: content,
+      imageUrl: imageUrl,
+      createdAt: sql`CURRENT_TIMESTAMP`,
+    }]);
+
+    // Insertar en la tabla PostImage si hay una URL de imagen
+    if (imageUrl) {
+      await db.insert(PostImage).values([{
+        id: nanoid(), // Generar un ID único para la imagen
+        postId: postId, // Relacionar la imagen con el post
+        imageUrl: imageUrl,
+      }]);
+    }
+  }
+
+  // Agregar un comentario a un post específico
+  const commentContent = formData.get("commentContent");
+  const postId = formData.get("postId");
+
+  if (typeof commentContent === "string" && commentContent.trim() && postId) {
+    // Insertar un nuevo comentario
+    const commentId = nanoid();
+    await db.insert(Comment).values([{
+      id: commentId,
+      postId: postId, // Asociar el comentario con el post
+      userId: user.id, // Usuario que hizo el comentario
+      content: commentContent,
+      createdAt: sql`CURRENT_TIMESTAMP`,
+    }]);
+  }
+}
+
+// Consultar los comentarios y sus relaciones
 const dbComments = await db
   .select()
   .from(Comment)
-  .innerJoin(User, eq(Comment.userId, User.id));
+  .innerJoin(User, eq(Comment.userId, User.id)) // Para obtener el usuario que hizo el comentario
+  .orderBy(desc(Comment.createdAt)); // Opcional: ordena los comentarios por fecha
+console.log("Comentarios de la DB:", dbComments);
 
 
 ---
 
 <Layout title="JDM Social Network">
-  {
-    user ? (
-      <h1>¡Bienvenido, {user.username} 🚗💨</h1>  // Si está logueado, muestra el nombre de usuario
-    ) : (
-      <h1>¡Bienvenido a JDM Social Network! 🚗💨</h1>  // Si no está logueado, muestra otro mensaje
-    )
-  }
-  {
-    user ? (
-      <div class="flex flex-col gap-2">
-        <form method="POST" action="/api/signout">
-          <button class="underline">Sign out</button>
-        </form>
-        <a class="underline" href="/admin">
-          {" "}
-          Go to the admin page
-        </a>
-      </div>
-    ) : (
-      <div class="flex flex-col gap-2">
-        <a class="underline" href="/api/github">
-          Sign In With Github
-        </a>
-        <a class="underline" href="/signin">
-          Sign In With Username/Password
-        </a>
-      </div>
-    )
-  }
-        
-        <form method="POST" style="display: grid; gap: 1rem;">
-          <label for="content">Contenido del post</label>
-          <textarea id="content" name="content" required></textarea>
+  <form method="POST" class="space-y-4 p-6 max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg">
+    <label for="content" class="block text-white text-lg font-semibold">Contenido del Post</label>
+    <textarea
+      id="content"
+      name="content"
+      required
+      class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
+    ></textarea>
 
-          <label for="imageUrl">URL de la imagen</label>
-          <input type="text" id="imageUrl" name="imageUrl" placeholder="URL de la imagen (opcional)" />
+    <label for="imageUrl" class="block text-white text-lg font-semibold">URL de la Imagen (Opcional)</label>
+    <input
+      type="text"
+      id="imageUrl"
+      name="imageUrl"
+      placeholder="URL de la imagen"
+      class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
+    />
 
-          <button type="submit">Publicar</button>
-        </form>
+    <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition duration-200">
+      Publicar
+    </button>
+  </form>
 
-      <h1>¡Bienvenido a JDM Social Network! 🚗💨</h1>
-
-<section>
-  {/* Mostrar posts existentes */}
-  <h2>Posts recientes</h2>
-  {dbPosts.length === 0 ? (
-    <p>No hay posts aún. ¡Sé el primero en publicar!</p>
+  {user ? (
+    <h1 class="text-white text-2xl mt-6 text-center">¡Bienvenido, {user.username} 🚗💨</h1>
   ) : (
-    dbPosts.map(post => (
-      <div id={`post-${Post.id}`}>
-        <h3>{post.Post.userId}</h3>
-        <p>{post.Post.content}</p>
-        {post.Post.imageUrl && <img src={post.Post.imageUrl} alt="Imagen del post" />}
-        {/* Aquí puedes agregar lógica para mostrar los comentarios */}
-      </div>
-    ))
+    <h1 class="text-white text-2xl mt-6 text-center">¡Bienvenido a JDM Social Network! 🚗💨</h1>
   )}
-</section>
-  <p class="pstyle">¡Conéctate con entusiastas del JDM de todo el mundo! desde Bocchih</p>
-  <div class="posts-container">
-    {
-      dbPosts.map(({ Post, User, PostImage }) => (
-        <article id={`post-${Post.id}`} class="post">
-          <header>
-            <div class="user-info">
-              <strong>@{User.username}</strong>
-              <span class="timestamp">
-                {new Date(Post.createdAt).toLocaleString()}
-              </span>
-            </div>
-          </header>
 
-          <p class="post-content">{Post.content}</p>
-          {PostImage && (
-            <img
-              class="post-image"
-              src={PostImage.imageUrl}
-              width="565"
-              height="330"
-              alt="Post image"
+  <section class="mt-8">
+    <h2 class="text-white text-2xl mb-6">Posts Recientes</h2>
+    {soloPosts.length === 0 ? (
+      <p class="text-white text-center">No hay posts aún. ¡Sé el primero en publicar!</p>
+    ) : (
+      soloPosts.map((post) => {
+        console.log("Post data:", post);  // Verifica que el post tenga la estructura correcta
+        // Filtrar los comentarios relacionados con el post actual
+        const comments = dbComments.filter(comment => comment.Comment.postId === post.Post.id);
+
+        return (
+          <div key={post.Post.id} class="mb-8">
+            <PostComponent
+              post={post.Post}
+              user={post.User}
+              comments={comments}
+              client:only="react"
             />
-          )}
-          <footer>
-            <div class="comments">
-              <h3>Comentarios:</h3>
-              {dbComments
-                .filter((comment) => comment.Comment.postId === Post.id)
-                .map(({ Comment, User }) => (
-                  <div class="comment">
-                    <strong>@{User.username}:</strong>
-                    <p>{Comment.content}</p>
-                    <span class="comment-time">
-                      {new Date(Comment.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-            </div>
-          </footer>
-        </article>
-      ))
-    }
-  </div>
+
+            {/* Formulario para agregar un comentario */}
+            <form method="POST" class="mt-4">
+              <input type="hidden" name="postId" value={post.Post.id} />
+              <textarea
+                name="commentContent"
+                placeholder="Escribe un comentario..."
+                required
+                class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
+              ></textarea>
+
+              <button type="submit" class="mt-2 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200">
+                Comentar
+              </button>
+            </form>
+          </div>
+        );
+      })
+    )}
+  </section>
 </Layout>
-
-<style>
-  .pstyle {
-    text-align: center;
-  }
-  h1 {
-    text-align: center;
-    font-size: 2.5rem;
-    margin: 1rem 0;
-    color: #ffff;
-    text: wrap;
-  }
-
-  .posts-container {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    margin: 2rem auto;
-    max-width: 700px;
-    font-family: "Arial", sans-serif;
-  }
-
-  .post {
-    background: #4cb7e1;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-
-  .post:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  .post header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-
-  .user-info {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.9rem;
-  }
-
-  .user-info strong {
-    color: #555;
-    font-size: 1.2rem;
-  }
-
-  .timestamp {
-    margin-top: 1rem;
-    color: #ffff;
-    font-size: 0.8rem;
-  }
-
-  .post-content {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #333;
-    margin-bottom: 1rem;
-  }
-
-  .post-image {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 1rem;
-    object-fit: cover;
-  }
-
-  footer {
-    margin-top: 2rem;
-    border-top: 1px solid #ddd;
-    padding-top: 1rem;
-  }
-
-  .comments {
-    margin-top: 1rem;
-  }
-
-  .comments h3 {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .comment {
-    background: #f9f9f9;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .comment strong {
-    color: #444;
-    font-size: 1rem;
-  }
-
-  .comment p {
-    font-size: 0.95rem;
-    color: #333;
-  }
-
-  .comment-time {
-    display: block;
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    color: #888;
-  }
-</style>
