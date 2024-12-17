@@ -2,7 +2,7 @@
 import { db, Post, PostImage, Comment, User, eq } from "astro:db";
 import Layout from "../layouts/Layout.astro";
 
-// Función para eliminar un post
+// Función para eliminar un post, usuario o comentario
 if (Astro.request.method === 'POST') {
   const formData = await Astro.request.formData();
   const postId = formData.get('postId');
@@ -22,16 +22,24 @@ if (Astro.request.method === 'POST') {
     }
   }
 
-  // Función para eliminar un usuario
   if (typeof userId === 'string') {
     try {
+      // Eliminar los comentarios relacionados con el usuario
+      await db.delete(Comment).where(eq(Comment.userId, userId));
+      // Eliminar los posts relacionados con el usuario
+      const userPosts = await db.select().from(Post).where(eq(Post.userId, userId));
+      for (const post of userPosts) {
+        await db.delete(PostImage).where(eq(PostImage.postId, post.id));
+        await db.delete(Comment).where(eq(Comment.postId, post.id));
+        await db.delete(Post).where(eq(Post.id, post.id));
+      }
+      // Eliminar el usuario
       await db.delete(User).where(eq(User.id, userId));
     } catch (error) {
       console.error("Error al eliminar el usuario:", error);
     }
   }
 
-  // Función para eliminar un comentario
   if (typeof commentId === 'string') {
     try {
       await db.delete(Comment).where(eq(Comment.id, commentId));
@@ -47,53 +55,72 @@ const users = await db.select().from(User);
 const comments = await db.select().from(Comment);
 ---
 
-  <section>
-    <h2>Gestión de Posts</h2>
-    <ul>
+<Layout title="Admin Dashboard">
+  <section class="bg-gray-800 p-4 rounded-lg shadow-lg mb-4">
+    <h2 class="text-white text-xl mb-4">Gestión de Posts</h2>
+    <input type="text" placeholder="Buscar posts..." class="p-2 mb-4 bg-gray-700 text-white rounded-lg w-full" oninput="filterPosts(event)">
+    <ul id="post-list">
       {posts.map((post) => (
-        <li>
-          <span>{post.content}</span>
+        <li class="mb-2">
+          <span class="text-white">{post.content}</span>
+          <span class="text-gray-400 text-sm"> - {new Date(post.createdAt).toLocaleString()}</span>
           <!-- Formulario para eliminar el post -->
-          <form method="POST">
+          <form method="POST" class="inline-block ml-2" onsubmit="return showModal('¿Estás seguro de que deseas eliminar este post? Esto también eliminará los comentarios relacionados.', this)">
             <input type="hidden" name="postId" value={post.id} />
-            <button type="submit" class="delete-button">Eliminar</button>
+            <button type="submit" class="delete-button bg-red-600 text-white p-2 rounded-lg">Eliminar</button>
           </form>
         </li>
       ))}
     </ul>
   </section>
 
-  <section>
-    <h2>Gestión de Usuarios</h2>
-    <ul>
+  <section class="bg-gray-800 p-4 rounded-lg shadow-lg mb-4">
+    <h2 class="text-white text-xl mb-4">Gestión de Usuarios</h2>
+    <input type="text" placeholder="Buscar usuarios..." class="p-2 mb-4 bg-gray-700 text-white rounded-lg w-full" oninput="filterUsers(event)">
+    <ul id="user-list">
       {users.map((user) => (
-        <li>
-          <span>{user.username}</span>
+        <li class="mb-2">
+          <span class="text-white">{user.username}</span>
+          <span class="text-gray-400 text-sm"> - {user.id}</span>
           <!-- Formulario para eliminar el usuario -->
-          <form method="POST">
+          <form method="POST" class="inline-block ml-2" onsubmit="return showModal('¿Estás seguro de que deseas eliminar este usuario? Esto también eliminará los posts y comentarios relacionados.', this)">
             <input type="hidden" name="userId" value={user.id} />
-            <button type="submit" class="delete-button">Eliminar</button>
+            <button type="submit" class="delete-button bg-red-600 text-white p-2 rounded-lg">Eliminar</button>
           </form>
         </li>
       ))}
     </ul>
   </section>
 
-  <section>
-    <h2>Gestión de Comentarios</h2>
-    <ul>
+  <section class="bg-gray-800 p-4 rounded-lg shadow-lg mb-4">
+    <h2 class="text-white text-xl mb-4">Gestión de Comentarios</h2>
+    <input type="text" placeholder="Buscar comentarios..." class="p-2 mb-4 bg-gray-700 text-white rounded-lg w-full" oninput="filterComments(event)">
+    <ul id="comment-list">
       {comments.map((comment) => (
-        <li>
-          <span>{comment.content}</span>
+        <li class="mb-2">
+          <span class="text-white">{comment.content}</span>
+          <span class="text-gray-400 text-sm"> - {new Date(comment.createdAt).toLocaleString()}</span>
           <!-- Formulario para eliminar el comentario -->
-          <form method="POST">
+          <form method="POST" class="inline-block ml-2" onsubmit="return showModal('¿Estás seguro de que deseas eliminar este comentario?', this)">
             <input type="hidden" name="commentId" value={comment.id} />
-            <button type="submit" class="delete-button">Eliminar</button>
+            <button type="submit" class="delete-button bg-red-600 text-white p-2 rounded-lg">Eliminar</button>
           </form>
         </li>
       ))}
     </ul>
   </section>
+
+  <!-- Modal de advertencia -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+      <p id="modal-message" class="text-white mb-4"></p>
+      <div class="flex justify-end">
+        <button onclick="hideModal()" class="bg-gray-600 text-white p-2 rounded-lg mr-2">Cancelar</button>
+        <button id="modal-confirm" class="bg-red-600 text-white p-2 rounded-lg">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</Layout>
 
 <style>
   body {
@@ -126,3 +153,65 @@ const comments = await db.select().from(Comment);
     background-color: #d43f4a;
   }
 </style>
+
+<script is:inline>
+  let formToSubmit = null;
+
+  function filterPosts(event) {
+    const filter = event.target.value;
+    const posts = document.querySelectorAll('#post-list li');
+    posts.forEach(post => {
+      const content = post.querySelector('span').textContent;
+      if (content.includes(filter)) {
+        post.style.display = '';
+      } else {
+        post.style.display = 'none';
+      }
+    });
+  }
+
+  function filterUsers(event) {
+    const filter = event.target.value;
+    const users = document.querySelectorAll('#user-list li');
+    users.forEach(user => {
+      const username = user.querySelector('span').textContent;
+      if (username.includes(filter)) {
+        user.style.display = '';
+      } else {
+        user.style.display = 'none';
+      }
+    });
+  }
+
+  function filterComments(event) {
+    const filter = event.target.value;
+    const comments = document.querySelectorAll('#comment-list li');
+    comments.forEach(comment => {
+      const content = comment.querySelector('span').textContent;
+      if (content.includes(filter)) {
+        comment.style.display = '';
+      } else {
+        comment.style.display = 'none';
+      }
+    });
+  }
+
+  function showModal(message, form) {
+    document.getElementById('modal-message').textContent = message;
+    document.getElementById('modal').classList.remove('hidden');
+    formToSubmit = form;
+    return false;
+  }
+
+  function hideModal() {
+    document.getElementById('modal').classList.add('hidden');
+    formToSubmit = null;
+  }
+
+  document.getElementById('modal-confirm').addEventListener('click', function() {
+    if (formToSubmit) {
+      formToSubmit.submit();
+    }
+    hideModal();
+  });
+</script>
