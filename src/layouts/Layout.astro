@@ -64,3 +64,25 @@ const { title } = Astro.props;
     </footer>
   </body>
 </html>
+
+<style>
+   * {
+    scrollbar-width: thin;
+    scrollbar-color: #ff4652 #000000;
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 42px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #000000;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #c93636;
+    border-radius: 42px;
+    border: 24px none #00ff4c;
+  }
+</style>

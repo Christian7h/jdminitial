@@ -1,6 +1,13 @@
 ---
+//admin.astro
 import { db, Post, PostImage, Comment, User, eq } from "astro:db";
 import Layout from "../layouts/Layout.astro";
+
+const user = Astro.locals.user;
+
+// Verificar si el usuario está autenticado y tiene el rol adecuado 
+const authorizedUsernames = ["admin", "test"]; 
+  if (!user || !authorizedUsernames.includes(user.username)) { return Astro.redirect("/signin"); }
 
 // Función para eliminar un post, usuario o comentario
 if (Astro.request.method === 'POST') {
