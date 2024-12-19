@@ -2,37 +2,53 @@ import { lucia } from "../../auth";
 import type { APIContext } from "astro";
 import { db, eq, User } from "astro:db";
 import { Argon2id } from "oslo/password";
+
 export async function POST(context: APIContext): Promise<Response> {
-  //read the form data
+  // Leer los datos del formulario
   const formData = await context.request.formData();
   const username = formData.get("username");
   const password = formData.get("password");
-  //validate the data
+
+  // Validar los datos
   if (typeof username !== "string") {
-    return new Response("Invalid username", {
-      status: 400,
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signin?error=Invalid username",
+      },
     });
   }
   if (typeof password !== "string") {
-    return new Response("Invalid password", {
-      status: 400,
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signin?error=Invalid password",
+      },
     });
   }
 
-  //search the user
+  // Buscar el usuario
   const foundUser = (
     await db.select().from(User).where(eq(User.username, username))
   ).at(0);
 
-  //if user not found
+  // Si no se encuentra el usuario
   if (!foundUser) {
-    return new Response("Incorrect username or password", { status: 400 });
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signin?error=Incorrect username or password",
+      },
+    });
   }
 
-  // verify if user has password
+  // Verificar si el usuario tiene contraseña
   if (!foundUser.password) {
-    return new Response("Invalid password", {
-      status: 400,
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signin?error=Invalid password",
+      },
     });
   }
 
@@ -41,13 +57,17 @@ export async function POST(context: APIContext): Promise<Response> {
     password
   );
 
-  //If password is not valid
+  // Si la contraseña no es válida
   if (!validPassword) {
-    return new Response("Incorrect username or password", { status: 400 });
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signin?error=Incorrect username or password",
+      },
+    });
   }
 
-  //Password is valid, user can log in
-
+  // La contraseña es válida, el usuario puede iniciar sesión
   const session = await lucia.createSession(foundUser.id, {});
   const sessionCookie = lucia.createSessionCookie(session.id);
   context.cookies.set(

@@ -3,9 +3,7 @@
 import { nanoid } from "nanoid";
 import { db, User, Post, PostImage, Comment, eq, sql, desc } from "astro:db";
 import PostComponent from "../components/PostComponent.jsx"; // Importa el componente
-import PostsFeed from "./PostsFeed";
 const user = Astro.locals.user;
-
 
 // Solo permitir la creación de un post si el usuario está logueado
 if (Astro.request.method === "POST" && user) {
@@ -16,21 +14,25 @@ if (Astro.request.method === "POST" && user) {
   if (typeof content === "string" && content.trim()) {
     // Crear un nuevo post
     const postId = nanoid(); // Usamos nanoid para generar un ID único
-    await db.insert(Post).values([{
-      id: postId,
-      userId: user.id, // ID del usuario que está publicando
-      content: content,
-      imageUrl: imageUrl,
-      createdAt: sql`CURRENT_TIMESTAMP`,
-    }]);
+    await db.insert(Post).values([
+      {
+        id: postId,
+        userId: user.id, // ID del usuario que está publicando
+        content: content,
+        imageUrl: imageUrl,
+        createdAt: sql`CURRENT_TIMESTAMP`,
+      },
+    ]);
 
     // Insertar en la tabla PostImage si hay una URL de imagen
     if (imageUrl) {
-      await db.insert(PostImage).values([{
-        id: nanoid(), // Generar un ID único para la imagen
-        postId: postId, // Relacionar la imagen con el post
-        imageUrl: imageUrl,
-      }]);
+      await db.insert(PostImage).values([
+        {
+          id: nanoid(), // Generar un ID único para la imagen
+          postId: postId, // Relacionar la imagen con el post
+          imageUrl: imageUrl,
+        },
+      ]);
     }
   }
 
@@ -41,13 +43,15 @@ if (Astro.request.method === "POST" && user) {
   if (typeof commentContent === "string" && commentContent.trim() && postId) {
     // Insertar un nuevo comentario
     const commentId = nanoid();
-    await db.insert(Comment).values([{
-      id: commentId,
-      postId: postId, // Asociar el comentario con el post
-      userId: user.id, // Usuario que hizo el comentario
-      content: commentContent,
-      createdAt: sql`CURRENT_TIMESTAMP`,
-    }]);
+    await db.insert(Comment).values([
+      {
+        id: commentId,
+        postId: postId, // Asociar el comentario con el post
+        userId: user.id, // Usuario que hizo el comentario
+        content: commentContent,
+        createdAt: sql`CURRENT_TIMESTAMP`,
+      },
+    ]);
   }
 }
 // Consultar los posts y sus relaciones (también incluye los comentarios)
@@ -63,54 +67,77 @@ const dbComments = await db
   .from(Comment)
   .innerJoin(User, eq(Comment.userId, User.id)) // Para obtener el usuario que hizo el comentario
   .orderBy(desc(Comment.createdAt)); // Opcional: ordena los comentarios por fecha
-console.log("Comentarios de la DB:", dbComments);
 ---
-{user ? (
-<form method="POST" class="space-y-4 p-6 max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg">
-    <h1 class=" text-red-500 text-2xl font-semibold">    ¡Para publicar, debes estar logueado!    </h1>
-    <label for="content" class="block text-white text-lg font-semibold">Contenido del Post</label>
-    <textarea
-      id="content"
-      name="content"
-      required
-      class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
-    ></textarea>
 
-    <label for="imageUrl" class="block text-white text-lg font-semibold">URL de la Imagen (Opcional)</label>
-    <input
-      type="text"
-      id="imageUrl"
-      name="imageUrl"
-      placeholder="URL de la imagen"
-      class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
-    />
+{
+  user ? (
+    <form
+      method="POST"
+      class="space-y-4 p-6 max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg"
+    >
+      <h1 class=" text-red-500 text-2xl font-semibold">
+        {" "}
+        ¡Para publicar, debes estar logueado!{" "}
+      </h1>
+      <label for="content" class="block text-white text-lg font-semibold">
+        Contenido del Post
+      </label>
+      <textarea
+        id="content"
+        name="content"
+        required
+        class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
+      />
 
-    <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition duration-200">
-      Publicar
-    </button>
-  </form>
-)  :(
-<p class="text-red-500 text-center">Debes iniciar sesión para publicar un post.</p>
-)
-}
+      <label for="imageUrl" class="block text-white text-lg font-semibold">
+        URL de la Imagen (Opcional)
+      </label>
+      <input
+        type="text"
+        id="imageUrl"
+        name="imageUrl"
+        placeholder="URL de la imagen"
+        class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
+      />
 
-
-  {user ? (
-    <h1 class="text-white text-2xl mt-6 text-center">¡Bienvenido, {user.username} 🚗💨</h1>
+      <button
+        type="submit"
+        class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition duration-200"
+      >
+        Publicar
+      </button>
+    </form>
   ) : (
-    <h1 class="text-white text-2xl mt-6 text-center">¡Bienvenido a JDM Social Network! 🚗💨</h1>
-  )}
-
-  <section class="mt-8">
-    <h2 class="text-white text-2xl mb-6">Posts Recientes</h2>
-    {soloPosts.length === 0 ? (
-      <p class="text-white text-center">No hay posts aún. ¡Sé el primero en publicar!</p>
+    <p class="text-red-500 text-center">
+      Debes iniciar sesión para publicar un post.
+    </p>
+  )
+}
+{
+  user ? (
+    <h1 class="text-white text-2xl mt-6 text-center">
+      ¡Bienvenido, {user.username} 🚗💨
+    </h1>
+  ) : (
+    <h1 class="text-white text-2xl mt-6 text-center">
+      ¡Bienvenido a JDM Social Network! 🚗💨
+    </h1>
+  )
+}
+<section class="mt-8">
+  <h2 class="text-white text-2xl mb-6">Posts Recientes</h2>
+  {
+    soloPosts.length === 0 ? (
+      <p class="text-white text-center">
+        No hay posts aún. ¡Sé el primero en publicar!
+      </p>
     ) : (
       soloPosts.map((post) => {
-        console.log("Post data:", post);  // Verifica que el post tenga la estructura correcta
+        console.log("Post data:", post); // Verifica que el post tenga la estructura correcta
         // Filtrar los comentarios relacionados con el post actual
-        const comments = dbComments.filter(comment => comment.Comment.postId === post.Post.id);
-
+        const comments = dbComments.filter(
+          (comment) => comment.Comment.postId === post.Post.id
+        );
         return (
           <div class="mb-8">
             <PostComponent
@@ -119,7 +146,6 @@ console.log("Comentarios de la DB:", dbComments);
               comments={comments}
               client:only="react"
             />
-
             {/* Formulario para agregar un comentario */}
             <form method="POST" class="mt-4">
               <input type="hidden" name="postId" value={post.Post.id} />
@@ -128,14 +154,17 @@ console.log("Comentarios de la DB:", dbComments);
                 placeholder="Escribe un comentario..."
                 required
                 class="w-full p-4 bg-gray-700 text-white rounded-lg shadow-md focus:ring-2 focus:ring-red-600"
-              ></textarea>
-
-              <button type="submit" class="mt-2 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200">
+              />
+              <button
+                type="submit"
+                class="mt-2 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200"
+              >
                 Comentar
               </button>
             </form>
           </div>
         );
       })
-    )}
-  </section>
+    )
+  }
+</section>
