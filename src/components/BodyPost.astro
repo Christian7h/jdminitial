@@ -133,7 +133,6 @@ const dbComments = await db
       </p>
     ) : (
       soloPosts.map((post) => {
-        console.log("Post data:", post); // Verifica que el post tenga la estructura correcta
         // Filtrar los comentarios relacionados con el post actual
         const comments = dbComments.filter(
           (comment) => comment.Comment.postId === post.Post.id
