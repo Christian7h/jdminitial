@@ -1,4 +1,3 @@
-//src/pages/api/github.ts
 import { generateState } from "arctic";
 import { github } from "../../auth";
 
@@ -6,7 +5,7 @@ import type { APIContext } from "astro";
 
 export async function GET(context: APIContext): Promise<Response> {
   const state = generateState();
-  const url = await github.createAuthorizationURL(state,[ "read:user" ]);
+  const url = await github.createAuthorizationURL(state, { scopes: ["read:user"] });
 
   context.cookies.set("github_oauth_state", state, {
     path: "/",

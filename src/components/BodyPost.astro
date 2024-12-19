@@ -109,7 +109,7 @@ const dbComments = await db
       const comments = dbComments.filter(comment => comment.Comment.postId === post.Post.id);
 
       return (
-        <div key={post.Post.id} class="mb-8">
+        <div data-key={post.Post.id} class="mb-8">
          <PostComponent
             post={post.Post}
             user={post.User} 
