@@ -1,5 +1,4 @@
 // src/components/PostComponent.jsx
-
 const PostComponent = ({ post, user, comments, role }) => {
   const sortedComments = comments.sort((a, b) => new Date(b.Comment.createdAt) - new Date(a.Comment.createdAt));
 
