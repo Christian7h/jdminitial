@@ -3,69 +3,61 @@
 import { nanoid } from "nanoid";
 import { db, User, Post, PostImage,Role, Comment, eq, sql, desc } from "astro:db";
 import PostComponent from "../components/PostComponent.jsx"; // Importa el componente
-import PostsFeed from "./PostsFeed";
 const user = Astro.locals.user;
 
-// Solo permitir la creación de un post si el usuario está logueado
+
 if (Astro.request.method === "POST" && user) {
   const formData = await Astro.request.formData();
   const content = formData.get("content");
-  const imageUrl = formData.get("imageUrl") || ""; // Asegurarse de que imageUrl sea una cadena vacía si es null
+  const imageUrl = formData.get("imageUrl") || ""; 
 
   if (typeof content === "string" && content.trim()) {
-    // Crear un nuevo post
-    const postId = nanoid(); // Usamos nanoid para generar un ID único
+    const postId = nanoid(); 
     await db.insert(Post).values([{
       id: postId,
-      userId: user.id, // ID del usuario que está publicando
+      userId: user.id,
       content: content,
       imageUrl: imageUrl,
       createdAt: sql`CURRENT_TIMESTAMP`,
     }]);
 
-    // Insertar en la tabla PostImage si hay una URL de imagen
     if (imageUrl) {
       await db.insert(PostImage).values([{
-        id: nanoid(), // Generar un ID único para la imagen
-        postId: postId, // Relacionar la imagen con el post
+        id: nanoid(), 
+        postId: postId, 
         imageUrl: imageUrl,
       }]);
     }
   }
 
-  // Agregar un comentario a un post específico
   const commentContent = formData.get("commentContent");
   const postId = formData.get("postId");
 
   if (typeof commentContent === "string" && commentContent.trim() && postId) {
-    // Insertar un nuevo comentario
     const commentId = nanoid();
     await db.insert(Comment).values([{
       id: commentId,
-      postId: postId, // Asociar el comentario con el post
-      userId: user.id, // Usuario que hizo el comentario
+      postId: postId, 
+      userId: user.id, 
       content: commentContent,
       createdAt: sql`CURRENT_TIMESTAMP`,
     }]);
   }
 }
 
-// Consultar los posts y sus relaciones (también incluye los comentarios)
 const soloPosts = await db
   .select()
   .from(Post)
   .innerJoin(User, eq(Post.userId, User.id))
-  .innerJoin(Role, eq(User.roleId, Role.id)) // Asegúrate de que Role esté siendo unido correctamente
+  .innerJoin(Role, eq(User.roleId, Role.id)) 
   .orderBy(desc(Post.createdAt));
-// Consultar los comentarios y sus relaciones
+// 
 const dbComments = await db
   .select()
   .from(Comment)
   .innerJoin(User, eq(Comment.userId, User.id))
-  .innerJoin(Role, eq(User.roleId, Role.id))  // Aquí estamos uniendo el Role correctamente
+  .innerJoin(Role, eq(User.roleId, Role.id))  
   .orderBy(desc(Comment.createdAt));
-
-  console.log("Posts con roles:", dbComments);
 ---
 
 {user ? (
@@ -105,7 +97,6 @@ const dbComments = await db
     <p class="text-white text-center">No hay posts aún. ¡Sé el primero en publicar!</p>
   ) : (
     soloPosts.map((post) => {
-      // Filtrar los comentarios relacionados con el post actual
       const comments = dbComments.filter(comment => comment.Comment.postId === post.Post.id);
 
       return (
@@ -118,7 +109,6 @@ const dbComments = await db
             client:only="react"
           />
 
-          {/* Formulario para agregar un comentario */}
           <form method="POST" class="mt-4" onsubmit="handleCommentSubmit(event)">
             <input type="hidden" name="postId" value={post.Post.id} />
             <textarea
@@ -175,12 +165,10 @@ const dbComments = await db
       if (response.ok) {
         window.location.reload();
       } else {
-        // Manejar errores
         alert('Error al publicar el comentario');
       }
     })
     .catch(error => {
-      // Manejar errores
       alert('Error al publicar el comentario');
     });
   }
