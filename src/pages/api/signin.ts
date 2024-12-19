@@ -1,7 +1,26 @@
 import { lucia } from "../../auth";
 import type { APIContext } from "astro";
-import { db, eq, User } from "astro:db";
+import { db, eq, User, Role } from "astro:db";
 import { Argon2id } from "oslo/password";
+
+// Función para actualizar el rol del usuario si han pasado 3 meses desde su registro
+async function updateUserRoleIfNeeded(userId: string) {
+  const foundUser = (await db.select().from(User).where(eq(User.id, userId)))[0];
+
+  if (!foundUser) {
+    return;
+  }
+
+  // Verificar si han pasado 3 meses desde la fecha de creación
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+  const createdAt = new Date(foundUser.created_at);
+  if (createdAt <= threeMonthsAgo && foundUser.roleId === "1") {
+    // Si han pasado 3 meses y el rol es "principiante" (roleId = 1), actualizamos a "intermedio" (roleId = 2)
+    await db.update(User).set({ roleId: "2" }).where(eq(User.id, userId));
+  }
+}
 
 export async function POST(context: APIContext): Promise<Response> {
   // Leer los datos del formulario
@@ -10,19 +29,11 @@ export async function POST(context: APIContext): Promise<Response> {
   const password = formData.get("password");
 
   // Validar los datos
-  if (typeof username !== "string") {
+  if (typeof username !== "string" || typeof password !== "string") {
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "/signin?error=Invalid username",
-      },
-    });
-  }
-  if (typeof password !== "string") {
-    return new Response(null, {
-      status: 302,
-      headers: {
-        "Location": "/signin?error=Invalid password",
+        "Location": "/signin?error=Invalid username or password",
       },
     });
   }
@@ -30,9 +41,8 @@ export async function POST(context: APIContext): Promise<Response> {
   // Buscar el usuario
   const foundUser = (
     await db.select().from(User).where(eq(User.username, username))
-  ).at(0);
+  )[0];
 
-  // Si no se encuentra el usuario
   if (!foundUser) {
     return new Response(null, {
       status: 302,
@@ -42,12 +52,12 @@ export async function POST(context: APIContext): Promise<Response> {
     });
   }
 
-  // Verificar si el usuario tiene contraseña
-  if (!foundUser.password) {
+  // Verificar la contraseña
+  if (foundUser.password === null) {
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "/signin?error=Invalid password",
+        "Location": "/signin?error=Incorrect username or password",
       },
     });
   }
@@ -57,7 +67,6 @@ export async function POST(context: APIContext): Promise<Response> {
     password
   );
 
-  // Si la contraseña no es válida
   if (!validPassword) {
     return new Response(null, {
       status: 302,
@@ -67,7 +76,10 @@ export async function POST(context: APIContext): Promise<Response> {
     });
   }
 
-  // La contraseña es válida, el usuario puede iniciar sesión
+  // Actualizar el rol si es necesario
+  await updateUserRoleIfNeeded(foundUser.id);
+
+  // Crear sesión
   const session = await lucia.createSession(foundUser.id, {});
   const sessionCookie = lucia.createSessionCookie(session.id);
   context.cookies.set(
@@ -75,5 +87,17 @@ export async function POST(context: APIContext): Promise<Response> {
     sessionCookie.value,
     sessionCookie.attributes
   );
-  return context.redirect("/");
+
+  // Obtener el rol del usuario actualizado
+  const userRole = (
+    await db.select().from(Role).where(eq(Role.id, Role.id))
+  )[0];
+
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      "Location": "/",
+    },
+  });
 }
