@@ -1,14 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
+const error = Astro.url.searchParams.get("error");
 ---
 
 <Layout title="Registrarse">
   <section class="bg-valorant-dark min-h-screen flex flex-col items-center justify-center">
     <div class="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-md">
       <div class="flex flex-col items-center">
-        <img class="w-24 mb-4" src="" alt="" />
+        <img class="w-24 mb-4" src="" alt="Img" />
         <h1 class="text-2xl font-bold text-white">Crea tu cuenta</h1>
       </div>
+      {/* Mostrar el error si existe */}
+      {error && <p class="text-red-500 text-center">{error}</p>}
       <form method="POST" action="/api/signup" class="space-y-6" onsubmit="return validateForm()">
         <div>
           <label for="username" class="block mb-2 text-sm font-medium text-white">Nombre de Usuario</label>

@@ -1,29 +1,61 @@
-import type { APIContext } from "astro";
 import { generateId } from "lucia";
 import { Argon2id } from "oslo/password";
-import { db, User } from "astro:db";
+import { db, User,eq } from "astro:db";
 import { lucia } from "../../auth";
+import type { APIContext } from "astro";
+
 export async function POST(context: APIContext): Promise<Response> {
-  //Parse the form data
+  // Leer los datos del formulario
   const formData = await context.request.formData();
   const username = formData.get("username");
   const password = formData.get("password");
-  //Validate the form data
-  if (!username || !password) {
-    return new Response("Username and Password are required", { status: 400 });
+
+  // Validar los datos
+  if (typeof username !== "string" || typeof password !== "string") {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signup?error=" + encodeURIComponent("Invalid username or password"),
+      },
+    });
   }
-  if (typeof username !== "string" || username.length < 4) {
-    return new Response("Username must be at least 4 characters long", {
-      status: 400,
+  // Verificar si el nombre de usuario ya existe
+  const existingUser = (
+    await db.select().from(User).where(eq(User.username, username))
+  )[0];
+  
+  // Validar longitud del nombre de usuario
+  if (username.length < 4) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signup?error=" + encodeURIComponent("El nombre de usuario debe tener al menos 4 caracteres"),
+      },
     });
   }
 
-  if (typeof password !== "string" || password.length < 4) {
-    return new Response("Password must be at least 4 characters long", {
-      status: 400,
+  // Validar longitud de la contraseña
+  if (password.length < 6) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signup?error=" + encodeURIComponent("La contraseña debe tener al menos 6 caracteres"),
+      },
     });
   }
-  // Insert user into db
+
+
+
+  if (existingUser) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/signup?error=" + encodeURIComponent("El nombre de usuario ya está registrado"),
+      },
+    });
+  }
+
+  // Insertar el nuevo usuario en la base de datos
   const userId = generateId(15);
   const hashedPassword = await new Argon2id().hash(password);
 
@@ -32,12 +64,12 @@ export async function POST(context: APIContext): Promise<Response> {
       id: userId,
       username,
       password: hashedPassword,
-      roleId: "1",  // Asigna el rol de "principiante" por defecto
+      roleId: "1", // Asignar rol "principiante" por defecto
       created_at: new Date(),
     },
   ]);
 
-  // Generate session
+  // Crear sesión para el nuevo usuario
   const session = await lucia.createSession(userId, {});
   const sessionCookie = lucia.createSessionCookie(session.id);
   context.cookies.set(
@@ -45,5 +77,12 @@ export async function POST(context: APIContext): Promise<Response> {
     sessionCookie.value,
     sessionCookie.attributes
   );
-  return context.redirect("/");
+
+  // Redirigir a la página principal con éxito
+  return new Response(null, {
+    status: 302,
+    headers: {
+      "Location": "/",
+    },
+  });
 }
