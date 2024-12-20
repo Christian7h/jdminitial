@@ -33,7 +33,7 @@ export async function POST(context: APIContext): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "/signin?error=Invalid username or password",
+        "Location": "/signin?error=Username o Password incorrectos",
       },
     });
   }
@@ -47,7 +47,7 @@ export async function POST(context: APIContext): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "/signin?error=Incorrect username or password",
+        "Location": "/signin?error=Username o Password incorrectos",
       },
     });
   }
@@ -57,7 +57,7 @@ export async function POST(context: APIContext): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "/signin?error=Incorrect username or password",
+        "Location": "/signin?error=Username o Password incorrectos",
       },
     });
   }
@@ -71,7 +71,7 @@ export async function POST(context: APIContext): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "/signin?error=Incorrect username or password",
+        "Location": "/signin?error=Username o Password incorrectos",
       },
     });
   }

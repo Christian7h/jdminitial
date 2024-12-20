@@ -15,7 +15,7 @@ export async function POST(context: APIContext): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "/signup?error=" + encodeURIComponent("Invalid username or password"),
+        "Location": "/signup?error=" + encodeURIComponent("Username y Password son requeridos"),
       },
     });
   }
@@ -23,7 +23,7 @@ export async function POST(context: APIContext): Promise<Response> {
   const existingUser = (
     await db.select().from(User).where(eq(User.username, username))
   )[0];
-  
+
   // Validar longitud del nombre de usuario
   if (username.length < 4) {
     return new Response(null, {
